@@ -1,0 +1,205 @@
+ssawork <-
+  function(formula,ssamk){
+    
+    ### check inputs
+    if(formula==ssamk$formula){
+      Etab=ssamk$et
+      mfdim=dim(Etab)
+      tnames=colnames(Etab)
+      oldnames=rownames(ssamk$et)[2:(ssamk$nxvar+1L)]
+    } else{
+      
+      # get formula
+      trmfrm=terms.formula(formula)
+      ychk=attr(trmfrm,"response")
+      if(ychk!=1L){stop("Must include same response in formula when entering 'makessp' object.")}
+      et=attr(trmfrm,"factors");   mfdim=dim(et)
+      newnames=rownames(et);       tnames=colnames(et)
+      mtidx=match(tnames,colnames(ssamk$et))
+      if(any(is.na(mtidx))){stop("Cannot add new effects to formula when entering 'makessa' object.")}
+      oldnames=rownames(ssamk$et)
+      if(newnames[1]!=oldnames[1]){stop("Must include same response in formula when entering 'makessp' object.")}
+      newnames=newnames[2:mfdim[1]]
+      oldnames=oldnames[2:(ssamk$nxvar+1L)]
+      
+      # check order of predictors
+      midx=match(newnames,oldnames)
+      if(any(is.na(midx))){stop("Cannot include new predictors in formula when entering 'makessp' object. \n Refit model using bigssp function.")}
+      Etab=matrix(0L,ssamk$nxvar,mfdim[2])
+      Etab[midx,]=et[-1,]
+      rownames(Etab)=oldnames
+      colnames(Etab)=tnames
+      Etab=rbind(0L,Etab)
+      
+    } # end if(formula==ssamk$formula)
+    
+    ### get info
+    xnames=oldnames;  tnames=tnames;  xdim=ssamk$xdim
+    if(is.null(ssamk$gcvopts)){
+      maxit=5;  gcvtol=10^-5;  alpha=1
+    } else {maxit=ssamk$gcvopts$maxit;  gcvtol=ssamk$gcvopts$gcvtol;  alpha=ssamk$gcvopts$alpha}
+    if(is.null(ssamk$lambdas)){lambdas=10^-(9:0)} else {lambdas=ssamk$lambdas}
+    
+    ### make design and penalty matrices
+    dps=ssadpm(ssamk$xvars,ssamk$type,ssamk$rks,ssamk$theknots,Etab)
+    Knames=colnames(dps$Kmat);    jdim=dim(dps$Jmats)
+    Jnames=colnames(dps$Jmat)[seq(1,jdim[2],by=ssamk$nknots)]
+    
+    ### get cross-product matrices
+    wsqrt=sqrt(ssamk$fweights)
+    KtJ=crossprod(dps$Kmat*ssamk$fweights,dps$Jmats)
+    KtK=crossprod(dps$Kmat*wsqrt)
+    JtJ=crossprod(dps$Jmats*wsqrt)
+    Kty=crossprod(dps$Kmat,ssamk$xvars[[ssamk$nxvar+1]])
+    Jty=crossprod(dps$Jmats,ssamk$xvars[[ssamk$nxvar+1]])
+    
+    ### initialize smoothing parameters
+    nbf=length(Kty)
+    if(ssamk$nxvar>1L){
+      gammas=smartssa(dps$Qmats,Etab,Jnames,lambdas,Kty,Jty,KtK,KtJ,
+                      JtJ,ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+    } else {gammas=1}
+    
+    ### estimate optimal smoothing parameters
+    if(ssamk$skip.iter){
+      cvg=NA
+      gamvec=NULL
+      for(j in 1:length(Jnames)){
+        xi=strsplit(Jnames[j],":")
+        xidx=match(xi[[1]],xnames)
+        gamvec=c(gamvec,prod(gammas[xidx]))
+      }
+      fxhat=lamcoef(lambdas,gamvec,Kty,Jty,KtK,KtJ,JtJ,
+                    dps$Qmats,ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+      fhat=fxhat[[1]]
+      dchat=fhat[1:(nbf+ssamk$nknots)]
+      yhat=cbind(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(ssamk$nknots)))%*%dchat
+      sseval=fhat[nbf+ssamk$nknots+1]
+      effdf=fhat[nbf+ssamk$nknots+2]
+      if(sseval<=0){
+        if(is.na(ssamk$rparm[1])){sseval=sum((ssamk$xvars[[ssamk$nxvar+1]]-yhat)^2)} else{sseval=.Machine$double.eps}
+        warning("Approximated SSE is less than 0, so model 'info' may be invalid. \nTry reducing the number of knots or increasing lambda range (e.g., lambdas=10^-(5:0)).")
+      }
+      if(effdf>=(ssamk$n[2]-1L)){
+        effdf=ssamk$n[2]-.Machine$double.eps
+        warning("Effective degrees of freedom exceeds n-1, so model 'info' may be invalid. \nTry reducing the number of knots or increasing lambda range (e.g., lambdas=10^-(5:0)).")
+      }
+      mevar=sseval/(ssamk$n[2]-effdf)
+      gcv=ssamk$n[2]*sseval/((ssamk$n[2]-alpha*effdf)^2)
+      newlam=lambdas[fhat[nbf+ssamk$nknots+3]]
+      aic=ssamk$n[2]*(1+log(2*pi))+ssamk$n[2]*log(sseval/ssamk$n[2])+effdf*2
+      bic=ssamk$n[2]*(1+log(2*pi))+ssamk$n[2]*log(sseval/ssamk$n[2])+effdf*log(ssamk$n[2])
+      csqrt=sqrt(mevar)*fxhat[[2]]
+      iter=vtol=NA
+    } else {
+      
+      # iterate estimates of lambda and etas until convergence
+      vtol=1;   gcv=ssamk$yty;   iter=0L;  cvg=FALSE
+      while(vtol>gcvtol && iter<maxit && min(c(gammas,gcv))>0) {
+
+        if(ssamk$nxvar==1L){
+          nqmat=matrix(0,nbf+ssamk$nknots,nbf+ssamk$nknots)
+          nqmat[(nbf+1):(ssamk$nknots+nbf),(nbf+1):(ssamk$nknots+nbf)]=ssamk$n[2]*dps$Qmats
+          if(length(lambdas)>1){
+            newlam=lamloop(lambdas,gammas,Kty,Jty,KtK,KtJ,JtJ,dps$Qmats,
+                           ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+          } else{newlam=lambdas}
+          gcvopt=nlm(f=gcvcss,p=log(newlam),yty=ssamk$yty,xtx=rbind(cbind(KtK,KtJ),
+                     cbind(t(KtJ),JtJ)),xty=rbind(Kty,Jty),nqmat=nqmat,
+                     ndpts=ssamk$n[2],alpha=alpha)
+          gcv=gcvopt$min;    newlam=exp(gcvopt$est)
+          vtol=0
+        } else{
+          
+          # step 1: find optimal lambda given gammas
+          gamvec=NULL
+          for(j in 1:length(Jnames)){
+            xi=strsplit(Jnames[j],":")
+            xidx=match(xi[[1]],xnames)
+            gamvec=c(gamvec,prod(gammas[xidx]))
+          }
+          newlam=lamloop(lambdas,gamvec,Kty,Jty,KtK,KtJ,JtJ,dps$Qmats,
+                         ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+          
+          # step 2: find optimal etas given lambda
+          gcvopt=nlm(f=gcvssa,p=log(gammas),yty=ssamk$yty,KtK=KtK,KtJ=KtJ,Kty=Kty,
+                     Jty=Jty,JtJ=JtJ,Qmats=dps$Qmats,ndpts=ssamk$n[2],alpha=alpha,
+                     nknots=ssamk$nknots,newlam=newlam,nbf=nbf,xnames=xnames,Jnames=Jnames)
+          newgcv=gcvopt$min
+          
+          # step 3: check for convergence
+          gammas=exp(gcvopt$est)
+          vtol=(gcv-newgcv)/gcv
+          gcv=newgcv
+          iter=iter+1
+          
+        } # end if(ncol(dps$Qmats)==ssamk$nknots)
+      } # end while(vtol>gcvtol && iter<maxit && min(c(gammas,gcv))>0)
+      
+      # get final estimates
+      gamvec=NULL
+      for(j in 1:length(Jnames)){
+        xi=strsplit(Jnames[j],":")
+        xidx=match(xi[[1]],xnames)
+        gamvec=c(gamvec,prod(gammas[xidx]))
+      }
+      fxhat=lamcoef(newlam,gamvec,Kty,Jty,KtK,KtJ,JtJ,dps$Qmats,
+                    ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+      fhat=fxhat[[1]]
+      dchat=fhat[1:(nbf+ssamk$nknots)]
+      yhat=cbind(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(ssamk$nknots)))%*%dchat
+      sseval=fhat[nbf+ssamk$nknots+1]
+      effdf=fhat[nbf+ssamk$nknots+2]
+      if(sseval<=0){
+        if(is.na(ssamk$rparm[1])){sseval=sum((ssamk$xvars[[ssamk$nxvar+1]]-yhat)^2)} else{sseval=.Machine$double.eps}
+        warning("Approximated SSE is less than 0, so model 'info' may be invalid. \nTry reducing the number of knots or increasing lambda range (e.g., lambdas=10^-(5:0)).")
+      }
+      if(effdf>=(ssamk$n[2]-1L)){
+        effdf=ssamk$n[2]-.Machine$double.eps
+        warning("Effective degrees of freedom exceeds n-1, so model 'info' may be invalid. \nTry reducing the number of knots or increasing lambda range (e.g., lambdas=10^-(5:0)).")
+      }
+      mevar=sseval/(ssamk$n[2]-effdf)
+      gcv=ssamk$n[2]*sseval/((ssamk$n[2]-alpha*effdf)^2)
+      aic=ssamk$n[2]*(1+log(2*pi))+ssamk$n[2]*log(sseval/ssamk$n[2])+effdf*2
+      bic=ssamk$n[2]*(1+log(2*pi))+ssamk$n[2]*log(sseval/ssamk$n[2])+effdf*log(ssamk$n[2])
+      csqrt=sqrt(mevar)*fxhat[[2]]
+      
+    } # end if(ssamk$skip.iter)
+    
+    ### posterior variance
+    pse=NA
+    if(ssamk$se.fit){pse=sqrt(postvar(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(ssamk$nknots)),csqrt))}
+    
+    ### calculate vaf
+    mval=ssamk$ysm/ssamk$n[2]
+    vaf=1-sseval/(ssamk$yty-ssamk$n[2]*(mval^2))
+    
+    ### retransform predictors
+    for(k in 1:ssamk$nxvar){
+      if(any(ssamk$type[[k]]==c("cub","acub","per"))){
+        ssamk$xvars[[k]]=as.matrix(ssamk$xvars[[k]]*(ssamk$xrng[[k]][2]-ssamk$xrng[[k]][1])+ssamk$xrng[[k]][1])
+      } else if(ssamk$type[[k]]=="nom"){
+        ssamk$xvars[[k]]=as.matrix(ssamk$flvls[[k]][ssamk$xvars[[k]]])
+        if(is.na(ssamk$rparm[1])==FALSE){ssamk$xorig[[k]]=as.matrix(ssamk$flvls[[k]][ssamk$xorig[[k]]])}
+      }
+    } # end for(k in 1:ssamk$nxvar)
+    if(is.na(ssamk$rparm[1])==FALSE){
+      yunique=ssamk$xvars[[ssamk$nxvar+1]]/as.numeric(ssamk$fweight); yvar=ssamk$yorig
+      xunique=ssamk$xvars[1:ssamk$nxvar];  ssamk$xvars=ssamk$xorig
+    } else{xunique=yunique=NA;  yvar=ssamk$xvars[[ssamk$nxvar+1]]; ssamk$xvars=ssamk$xvars[1:ssamk$nxvar]}
+    
+    ### collect results
+    names(gammas)=xnames
+    if(ssamk$skip.iter==FALSE && vtol<=gcvtol){cvg=TRUE}
+    ndf=data.frame(n=ssamk$n[2],df=effdf,row.names="")
+    modelspec=list(myknots=ssamk$theknots,rparm=ssamk$rparm,lambda=newlam,
+                   gammas=gammas,gcvopts=ssamk$gcvopts,nxvar=xdim,xrng=ssamk$xrng,
+                   flvls=ssamk$flvls,tpsinfo=ssamk$tpsinfo,iter=iter,vtol=vtol,
+                   coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames)
+    ssafit=list(fitted.values=yhat,se.fit=pse,yvar=yvar,xvars=ssamk$xvars,
+                type=ssamk$type,yunique=yunique,xunique=xunique,sigma=sqrt(mevar),
+                ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),modelspec=modelspec,
+                converged=cvg,tnames=tnames)
+    return(ssafit)
+    
+  }
