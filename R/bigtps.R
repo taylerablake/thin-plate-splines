@@ -3,7 +3,7 @@ bigtps <-
            alpha=1,lambdas=NULL,se.fit=FALSE,rseed=1234){
     ###### Fits Cubic Thin-Plate Spline
     ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: March 22, 2014
+    ###### Last modified: May 16, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}
@@ -124,6 +124,9 @@ bigtps <-
       if(any(lambdas<0)){stop("Input 'lambdas' must be nonnegative.")}
       lambda=lamloop(lambdas,1,Kty,Jty,KtK,KtJ,JtJ,
                      Qmat,ncdim,n,alpha,yty,nbf)
+    } else {
+      lambda=lambdas[1]
+      if(lambda<0){stop("Input 'lambdas' must be nonnegative.")}
     }
     
     ### get final estimates

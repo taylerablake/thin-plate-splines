@@ -1,10 +1,10 @@
-3066bba8608c07375f101e574f3987ea *DESCRIPTION
+003d58375dc7d6c28651757e1843e07d *DESCRIPTION
 0d20e342ccb76fd1b117957260f2b1b8 *NAMESPACE
-476a59b98c005a6313ca6678cc99de3e *R/bigspline.R
+3405095b8594e62d063866d9c4bbbc8f *R/bigspline.R
 222140957ca820f12e24d08f2677c889 *R/bigssa.R
 215f83163ff4ca47def89007d21b1efd *R/bigssp.R
-505fa8b3d565e1e90137966e4d558410 *R/bigtps.R
-139ea0ac75b2729f6cde6a888502feff *R/binsamp.R
+bef895dd79428769ed0d4a4371a09b8e *R/bigtps.R
+008b32cacf2cbedd9160818a3280b8bc *R/binsamp.R
 f1a8f8d2be4fd22b2e4eb222c7369e78 *R/gcvcss.R
 7e922a1da906989d7287b6f188d8d211 *R/gcvssa.R
 3687f3a1e9d901d64ca247a91501feff *R/gcvssp.R
@@ -42,7 +42,7 @@ c571686e5344ee42949329c213bd2488 *R/sspwork.R
 c38c57dc1dae4c729eb98722b9918ac6 *R/summary.tps.R
 fddafeacb20b3312eb99a3b5079614dc *R/tcprod.R
 91c45dd81f476936bf86708a78635124 *R/unifqsum.R
-ec7522e270a8af75d3a00abe6902ee02 *man/bigspline.Rd
+bf5761c1bdd730dab31f64e4e43b1d6f *man/bigspline.Rd
 4da37c85ed7b2bf7a431f936a720c7c6 *man/bigsplines-internal.Rd
 12c1daf770140865e2b189baf53ce326 *man/bigsplines-package.Rd
 3d9b80623ee059427f72efc602fa92b2 *man/bigssa.Rd

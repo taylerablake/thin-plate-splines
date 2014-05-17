@@ -152,16 +152,16 @@ permod
 
 # define more jagged function
 set.seed(773)
-myfun<-function(x){2*x+cos(2*pi*x)}
+myfun<-function(x){2*x+cos(4*pi*x)}
 x<-runif(10^6)*4
 y<-myfun(x)+rnorm(10^6)
 
 # try different numbers of knots
 r1mod<-bigspline(x,y,nknots=20)
 crossprod(myfun(r1mod$xunique)-r1mod$fitted)/length(r1mod$fitted)
-r2mod<-bigspline(x,y,nknots=35)
+r2mod<-bigspline(x,y,nknots=30)
 crossprod(myfun(r2mod$xunique)-r2mod$fitted)/length(r2mod$fitted)
-r3mod<-bigspline(x,y,nknots=50)
+r3mod<-bigspline(x,y,nknots=40)
 crossprod(myfun(r3mod$xunique)-r3mod$fitted)/length(r3mod$fitted)
 
 }

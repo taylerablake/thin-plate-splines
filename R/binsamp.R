@@ -13,7 +13,7 @@ binsamp <-
     gvec=matrix(1,xdim[1],1)
     kconst=1
     for(kk in 1:xdim[2]){
-      gvec = gvec + kconst*round((nmbin[kk]-1L)*((x[,kk]-xrng[1,kk])/(xrng[2,kk]-xrng[1,kk])))
+      gvec = gvec + kconst*pmin(floor(nmbin[kk]*((x[,kk]-xrng[1,kk])/(xrng[2,kk]-xrng[1,kk]))),nmbin[kk]-1L)
       kconst = kconst*nmbin[kk]
     }
     gvec=as.integer(gvec)
