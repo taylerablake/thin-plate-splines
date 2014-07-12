@@ -7,8 +7,9 @@ Makes objects to fit smoothing spline anova models
 This function creates a list containing the necessary information to fit a smoothing spline anova model (see \code{\link{bigssa}}). 
 }
 \usage{
-makessa(formula,data,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
-        skip.iter=TRUE,se.fit=FALSE,rseed=1234,gcvopts=NULL)
+makessa(formula,data,type=NULL,nknots=NULL,rparm=NA,
+        lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
+        gcvopts=NULL,knotcheck=TRUE,gammas=NULL)
 }
 \arguments{
   \item{formula}{
@@ -41,6 +42,12 @@ makessa(formula,data,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
   \item{gcvopts}{
 	Control parameters for optimization. List with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{gcvtol}: covergence tolerange for iterative GCV update, and (c) \code{alpha}: tuning parameter for GCV minimization. Default: \code{gcvopts=list(maxit=5,gcvtol=10^-5,alpha=1)}
 }
+  \item{knotcheck}{
+If \code{TRUE}, only unique knots are used (for stability).  
+}
+  \item{gammas}{
+List of initial smoothing parameters for each predictor. See Details. 
+}
 }
 \details{
  See \code{\link{bigssa}} and below example for more details.
@@ -51,10 +58,12 @@ makessa(formula,data,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
 \references{
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 
-	Helwig, N. E. and Ma, P. (under review). Fast thin-plate splines via bin-sampled knots. \emph{Computational Statistics & Data Analysis}.
+	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
 	
-	Helwig, N. E. and Ma, P. (under review). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
-	
+  Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
+  
+  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
+  
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }
 \author{

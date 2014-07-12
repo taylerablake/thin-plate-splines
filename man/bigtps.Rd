@@ -8,7 +8,8 @@ Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a thi
 }
 \usage{
 bigtps(x,y,nknots=NULL,nvec=NULL,rparm=NA,
-       alpha=1,lambdas=NULL,se.fit=FALSE,rseed=1234)
+       alpha=1,lambdas=NULL,se.fit=FALSE,
+       rseed=1234,knotcheck=TRUE)
 }
 \arguments{
   \item{x}{
@@ -21,7 +22,7 @@ bigtps(x,y,nknots=NULL,nvec=NULL,rparm=NA,
 	Two possible options: (a) scalar giving total number of random knots to sample, or (b) vector indexing which rows of \code{x} to use as knots.
 } 
   \item{nvec}{
-  Number of eigenvectors (and eigenvalues) to use in approximation. Must be less than or equal to the number of knots. Default sets \code{nvec<-nknots}.
+  Number of eigenvectors (and eigenvalues) to use in approximation. Must be less than or equal to the number of knots and greater than or equal to \code{ncol(x)+2}. Default sets \code{nvec<-nknots}. Can also input \code{0<nvec<1} to retain \code{nvec} percentage of eigenbasis variation.
 }
   \item{rparm}{
 	Rounding parameter(s) for \code{x}. Use \code{rparm=NA} to fit unrounded solution. Can provide one (positive) rounding parameter for each column of \code{x}.
@@ -37,6 +38,9 @@ bigtps(x,y,nknots=NULL,nvec=NULL,rparm=NA,
 }
   \item{rseed}{
   Random seed for knot sampling. Input is ignored if \code{nknots} is an input vector of knot indices. Set \code{rseed=NULL} to obtain a different knot sample each time, or set \code{rseed} to any positive integer to use a different seed than the default.
+}
+  \item{knotcheck}{
+If \code{TRUE}, only unique knots are used (for stability).  
 }
 }
 \details{
@@ -64,10 +68,12 @@ bigtps(x,y,nknots=NULL,nvec=NULL,rparm=NA,
 }
 \references{
   Gu, C. (2013). \emph{Smoothing spline ANOVA models, 2nd edition}. New York: Springer.
-
-	Helwig, N. E. and Ma, P. (under review). Fast thin-plate splines via bin-sampled knots. \emph{Computational Statistics & Data Analysis}.
 	
-	Helwig, N. E. and Ma, P. (under review). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  
+  Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
+  
+  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }

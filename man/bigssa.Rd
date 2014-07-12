@@ -7,8 +7,9 @@ Fits smoothing spline anova models
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a Smoothing Spline Anova (SSA) has the form \deqn{y_{i}= \eta(\mathbf{x}_{i}) + e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{\mathbf{x}_{i}=(x_{i1},\ldots,x_{ip})} is the \eqn{i}-th observation's nonparametric predictor vector, \eqn{\eta} is an unknown smooth function relating the response and nonparametric predictors, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error. Function can fit additive models, and also allows for 2-way and 3-way interactions between any number of predictors (see Details and Examples).
 }
 \usage{
-bigssa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
-       skip.iter=TRUE,se.fit=FALSE,rseed=1234,gcvopts=NULL)
+bigssa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
+       lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
+       gcvopts=NULL,knotcheck=TRUE,gammas=NULL)
 }
 \arguments{
   \item{formula}{
@@ -41,6 +42,12 @@ bigssa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
   \item{gcvopts}{
 	Control parameters for optimization. List with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{gcvtol}: covergence tolerange for iterative GCV update, and (c) \code{alpha}: tuning parameter for GCV minimization. Default: \code{gcvopts=list(maxit=5,gcvtol=10^-5,alpha=1)}
 }
+  \item{knotcheck}{
+If \code{TRUE}, only unique knots are used (for stability).  
+}
+  \item{gammas}{
+List of initial smoothing parameters for each predictor. See Details. 
+}
 }
 \details{
  The \code{formula} syntax is similar to that used in \code{\link{lm}} and many other R regression functions. Use \code{y~x} to predict the response \code{y} from the predictor \code{x}. Use \code{y~x1+x2} to fit an additive model of the predictors \code{x1} and \code{x2}, and use \code{y~x1*x2} to fit an interaction model. The syntax \code{y~x1*x2} includes the interaction and main effects, whereas the syntax \code{y~x1:x2} is not supported. See Computational Details for specifics about how nonparametric effects are estimated.
@@ -67,11 +74,13 @@ bigssa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
 }
 \references{
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
-
-	Helwig, N. E. and Ma, P. (under review). Fast thin-plate splines via bin-sampled knots. \emph{Computational Statistics & Data Analysis}.
 	
-	Helwig, N. E. and Ma, P. (under review). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
 	
+  Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
+  
+  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
+  
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }
 \author{

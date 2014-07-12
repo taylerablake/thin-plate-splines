@@ -1,9 +1,10 @@
 makessa <-
-  function(formula,data,type=NULL,nknots=NULL,rparm=NA,lambdas=NULL,
-           skip.iter=TRUE,se.fit=FALSE,rseed=1234,gcvopts=NULL){
+  function(formula,data,type=NULL,nknots=NULL,rparm=NA,
+           lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
+           gcvopts=NULL,knotcheck=TRUE,gammas=NULL){
     ###### Makes Smoothing Spline Anova models
     ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: March 21, 2014
+    ###### Last modified: July 11, 2014
     
     ### get initial info 
     mf=match.call()
@@ -44,6 +45,12 @@ makessa <-
         rnidx=match(xnames,names(rparm))
         if(any(is.na(rnidx))){stop('Variable names in "rparm" must match variable names in "formula".')}
         rparm=rparm[rnidx]
+      }
+      if(is.null(gammas[1])==FALSE){
+        gnidx=match(xnames,names(gammas))
+        if(any(is.na(gnidx))){stop('Variable names in "gammas" must match variable names in "formula".')}
+        gammas=unlist(gammas[gnidx])
+        if(any(gammas<=0)){stop('Input "gammas" must be nonnegative smoothing parameters.')}
       }
     } else{
       type=type[[1]]
@@ -108,6 +115,15 @@ makessa <-
       } # end for(k in 1:nxvar)
       xorig=yorig=NA
     } else{
+      # check rparms
+      rpall=NULL
+      for(k in 1:nxvar){rpall=c(rpall,rparm[[k]])}
+      for(k in 1:length(rpall)){
+        rplog=log(c(rpall[k],rpall[k]/2,rpall[k]/5),base=10)
+        rpchk=rep(FALSE,3); for(jj in 1:3){rpchk[jj]=(rplog[jj]==as.integer(rplog[jj]))}
+        if(any(rpchk)==FALSE){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
+      }
+      # save original variables
       xorig=xvars
       yorig=yvar
       # get rounded point indices
@@ -117,10 +133,17 @@ makessa <-
           gvec = gvec + kconst*(xvars[[k]]-1L)
           kconst = kconst*xrng[[k]][2]
         } else if(type[[k]]=="tps"){
-          if(length(rparm[[k]])!=xdim[k]){rparm[[k]]=rep(rparm[[k]][1],xdim[k])}
+          if(length(rparm[[k]])!=xdim[k]){
+            rprep=rep(rparm[[k]][1],xdim[k])
+            if(nxvar==1L){rparm=list(rprep)} else {rparm[[k]]=rprep}
+          }
+          rxrng=xrng[[k]]
           for(j in 1:xdim[k]){
-            gvec = gvec + kconst*round((xvars[[k]][,j]-xrng[[k]][1,j])/rparm[[k]][j])
-            kconst = kconst*round(1+(xrng[[k]][2,j]-xrng[[k]][1,j])/rparm[[k]][j])
+            #gvec = gvec + kconst*round((xvars[[k]][,j]-xrng[[k]][1,j])/rparm[[k]][j])
+            #kconst = kconst*round(1+(xrng[[k]][2,j]-xrng[[k]][1,j])/rparm[[k]][j])
+            rxrng[,j]=round(rxrng[,j]/rparm[[k]][j])*rparm[[k]][j]
+            gvec = gvec + kconst*round((xvars[[k]][,j]-rxrng[1,j])/rparm[[k]][j])
+            kconst = kconst*round(1+(rxrng[2,j]-rxrng[1,j])/rparm[[k]][j])
             xvars[[k]][,j]=as.matrix(round(xvars[[k]][,j]/rparm[[k]][j]))*rparm[[k]][j]
           }
         } else{
@@ -131,7 +154,7 @@ makessa <-
         }
       } # end for(k in 1:nxvar)
       # get unique points, frequencies, and sums
-      gvec=as.integer(gvec)
+      gvec=as.factor(gvec)
       glindx=split(cbind(1:ndpts,yvar),gvec)
       if(is.na(kidx[1])==FALSE){for(k in 1:nxvar){theknots[[k]]=as.matrix(xvars[[k]][kidx,])}}
       fs=matrix(unlist(lapply(glindx,unifqsum)),ncol=3,byrow=TRUE)
@@ -147,6 +170,20 @@ makessa <-
       for(k in 1:nxvar){theknots[[k]]=as.matrix(xvars[[k]][kidx,])}
     } 
     
+    ### check knots
+    if(knotcheck){
+      matknots=NULL
+      for(k in 1:nxvar){matknots=cbind(matknots,theknots[[k]])}
+      matknots=unique(matknots)
+      if(nrow(matknots)<nknots){
+        if(nxvar>1){
+          csdim=c(0,cumsum(xdim))
+          for(k in 1:nxvar){theknots[[k]]=as.matrix(matknots[,(csdim[k]+1):(csdim[k]+xdim[k])])}
+        } else {theknots[[1]]=as.matrix(matknots)}
+        nknots=nrow(matknots)
+      }
+    }
+    
     ### make marginal reproducing kernel matrices
     rks=makerkm(xvars,type,theknots,xrng)
     
@@ -157,7 +194,7 @@ makessa <-
                fweights=fweights,type=type,xdim=xdim,theknots=theknots,nknots=nknots,
                lambdas=lambdas,rks=rks[1:4],gcvopts=gcvopts,xorig=xorig,yorig=yorig,
                se.fit=se.fit,skip.iter=skip.iter,ysm=ysm,rparm=rparm,xrng=xrng,
-               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula)
+               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,gammas=gammas)
     class(ssamk)<-"makessa"
     return(ssamk)
     

@@ -1,9 +1,10 @@
 bigspline <-
   function(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
-           xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,rseed=1234){
+           xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,
+           rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Smoothing Spline
     ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: May 16, 2014
+    ###### Last modified: July 10, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}
@@ -28,6 +29,9 @@ bigspline <-
     rparm=rparm[1]
     if(is.na(rparm)==FALSE){
       if(rparm<=0 || rparm>=1){stop("Must set input 'rparm' such that 0<rparm<1")}
+      rplog=log(c(rparm,rparm/2,rparm/5),base=10)
+      rpchk=rep(FALSE,3); for(jj in 1:3){rpchk[jj]=(rplog[jj]==as.integer(rplog[jj]))}
+      if(any(rpchk)==FALSE){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
       xorig=x; yorig=y
       gidx=round(x/rparm)
       gvec=as.integer(1L+gidx)
@@ -40,9 +44,10 @@ bigspline <-
     } else {nunewr=n; xorig=yorig=NA; w=1}
     
     ### get knots
-    kidx=binsamp(x,matrix(c(0,1),2,1),nknots,1L)
+    kidx=binsamp(x,matrix(c(0,1),2,1),min(nknots,nrow(x)),1L)
     theknots=as.matrix(x[kidx])
     nknots=length(kidx)
+    if(knotcheck){theknots=unique(theknots); nknots=nrow(theknots)}
     
     ### make marginal reproducing kernel matrices
     if(type=="cub"){

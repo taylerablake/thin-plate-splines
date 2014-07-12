@@ -1,9 +1,10 @@
 bigtps <-
   function(x,y,nknots=NULL,nvec=NULL,rparm=NA,
-           alpha=1,lambdas=NULL,se.fit=FALSE,rseed=1234){
+           alpha=1,lambdas=NULL,se.fit=FALSE,
+           rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Thin-Plate Spline
     ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: May 16, 2014
+    ###### Last modified: July 11, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}
@@ -12,7 +13,16 @@ bigtps <-
     if(nrow(y)!=n){stop("Lengths of 'x' and 'y' must match.")}
     if(ncol(y)>1){stop("Response must be unidimensional (vector).")}
     if(nx>3){stop("Too many predictors. Use another function (bigssa or bigssp).")}
-    if(is.null(nvec)==FALSE && nvec[1]<(nx+2)){stop("Input 'nvec' is too small.")}
+    nvec=nvec[1]
+    if(is.null(nvec)==FALSE){
+      if(nvec<1L){
+        if(nvec<=0){stop("Input 'nvec' is too small.")}
+      } else{
+        nvec=as.integer(nvec)
+        while(nvec<(nx+2)){nvec=nvec+1L}
+        #if(nvec<(nx+2)){stop("Input 'nvec' is too small.")}
+      }
+    }
     
     ### check knots
     if(is.null(nknots)){
@@ -30,14 +40,29 @@ bigtps <-
     if(is.na(rparm[1])==FALSE){
       xrng=apply(x,2,range);   xorig=x;   yorig=y
       gvec=matrix(1L,n,1);     kconst=1
-      if(length(rparm)!=nx){rparm=rep(rparm[1],nx)}
+      if(length(rparm)!=nx){
+        rparm=rep(rparm[1],nx)
+        rplog=log(c(rparm[1],rparm[1]/2,rparm[1]/5),base=10)
+        rpchk=rep(FALSE,3); for(jj in 1:3){rpchk[jj]=(rplog[jj]==as.integer(rplog[jj]))}
+        if(any(rpchk)==FALSE){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
+      } else{
+        for(kk in 1:nx){
+          rplog=log(c(rparm[kk],rparm[kk]/2,rparm[kk]/5),base=10)
+          rpchk=rep(FALSE,3); for(jj in 1:3){rpchk[jj]=(rplog[jj]==as.integer(rplog[jj]))}
+          if(any(rpchk)==FALSE){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
+        }
+      }
+      rxrng=xrng
       for(j in 1:nx){
         if(rparm[j]<=0 || rparm[j]>=xrng[2,j]){stop("Must set input 'rparm' such that 0<rparm<max(x)")}
-        gvec = gvec + kconst*round((x[,j]-xrng[1,j])/rparm[j])
-        kconst = kconst*round(1+(xrng[2,j]-xrng[1,j])/rparm[j])
+        #gvec = gvec + kconst*round((x[,j]-xrng[1,j])/rparm[j])
+        #kconst = kconst*round(1+(xrng[2,j]-xrng[1,j])/rparm[j])
+        rxrng[,j]=round(rxrng[,j]/rparm[j])*rparm[j]
+        gvec = gvec + kconst*round((x[,j]-rxrng[1,j])/rparm[j])
+        kconst = kconst*round(1+(rxrng[2,j]-rxrng[1,j])/rparm[j])
         x[,j]=as.matrix(round(x[,j]/rparm[j]))*rparm[j]
       }
-      gvec=as.integer(gvec)
+      gvec=as.factor(gvec)
       glindx=split(cbind(1:n,y),gvec)
       if(is.na(kidx[1])==FALSE){theknots=as.matrix(x[kidx,])}
       fs=matrix(unlist(lapply(glindx,unifqsum)),ncol=3,byrow=TRUE)
@@ -53,14 +78,14 @@ bigtps <-
       if(nknots<1){stop("Input 'nknots' must be positive integer.")}
       kidx=sample(nunewr,nknots,prob=(w/n))
       theknots=as.matrix(x[kidx,])
-    } 
-    if(nknots<nx+2){stop("Input 'nknots' is too small.")}
+    }
+    if(knotcheck){theknots=unique(theknots); nknots=nrow(theknots)}
+    if(nknots<nx+2){stop("Input 'nknots' is too small. Need nknots-2 >= ncol(x).")}
 
     ### create penalty matrix
     if(nx<3){gconst=1} else{gconst=-1}
     mqed=gconst*(.Fortran("tpskersym",theknots,nknots,nx,matrix(0,nknots,nknots)))[[4]]
     sqed=gconst*(.Fortran("tpsker",x,theknots,nunewr,nx,nknots,matrix(0,nunewr,nknots)))[[6]]
-    
     
     ### check for eigenvalue decomposition of penalty matrix 
     if(is.null(nvec)){
@@ -81,14 +106,25 @@ bigtps <-
       Jty=crossprod(Jmat,y)
       
     } else {
-      
       # EVD of penalty matrix
-      nvec=as.integer(min(c(nvec[1],nknots)))
-      if(nvec<1L){stop("Input 'nvec' must be positive integer.")}
-      qeig=eigen(mqed,symmetric=TRUE)
-      qord=order(abs(qeig$val),decreasing=TRUE)
-      Uvecs=(qeig$vec[,qord])[,1:nvec]
-      Uvals=(qeig$val[qord])[1:nvec]
+      if(nvec<1L){
+        qeig=eigen(mqed,symmetric=TRUE)
+        absval=abs(qeig$val)
+        qord=order(absval,decreasing=TRUE)
+        qvafs=cumsum(absval[qord])/sum(absval)
+        nvec=which(qvafs>=nvec)[1]
+        while(nvec<(nx+2)){nvec=nvec+1L}
+        #if(nvec<(nx+2)){stop("Input 'nvec' is too small.")}
+        Uvecs=(qeig$vec[,qord])[,1:nvec]
+        Uvals=(qeig$val[qord])[1:nvec]
+      } else{
+        nvec=as.integer(min(c(nvec[1],nknots)))
+        if(nvec<1L){stop("Input 'nvec' must be positive integer.")}
+        qeig=eigen(mqed,symmetric=TRUE)
+        qord=order(abs(qeig$val),decreasing=TRUE)
+        Uvecs=(qeig$vec[,qord])[,1:nvec]
+        Uvals=(qeig$val[qord])[1:nvec]
+      }
       rm(qeig,mqed)
       
       # tranforms problem to unconstrained

@@ -7,7 +7,7 @@ Bin-samples strategic knot indices
 Breaks the predictor domain into a user-specified number of disjoint subregions, and randomly samples a user-specified number of observations from each (nonempty) subregion. 
 }
 \usage{
-binsamp(x,xrng=NULL,nmbin=10,nsamp=1)
+binsamp(x,xrng=NULL,nmbin=11,nsamp=1,alg=c("new","old"))
 }
 \arguments{
   \item{x}{
@@ -17,17 +17,20 @@ Matrix of predictors \eqn{\mathbf{X}=\{x_{ij}\}_{n \times p}} where \eqn{n} is t
 Optional matrix of predictor ranges: \eqn{\mathbf{R}=\{r_{kj}\}_{2 \times p}} where \eqn{r_{1j}=\min_{i}x_{ij}} and \eqn{r_{2j}=\max_{i}x_{ij}}.
 }
   \item{nmbin}{
-Vector \eqn{\mathbf{b}=(b_{1},\ldots,b_{p})'}, where \eqn{b_{j}\geq1} is the number of marginal bins to use for the \eqn{j}-th predictor. If \code{length(nmbin)<ncol(x)}, then \code{nmbin[1]} is used for all columns. Default is \code{nmbin=10} marginal bins for each dimension.
+Vector \eqn{\mathbf{b}=(b_{1},\ldots,b_{p})'}, where \eqn{b_{j}\geq1} is the number of marginal bins to use for the \eqn{j}-th predictor. If \code{length(nmbin)<ncol(x)}, then \code{nmbin[1]} is used for all columns. Default is \code{nmbin=11} marginal bins for each dimension.
 }
   \item{nsamp}{
 Scalar \eqn{s\geq1} giving the number of observations to sample from each bin. Default is sample \code{nsamp=1} observation from each bin.
+}
+\item{alg}{
+Bin-sampling algorithm. New algorithm forms equidistant grid, whereas old algorithm forms approximately equidistant grid. New algorithm is default for versions 1.0-1 and later.
 }
 }
 \value{
 Returns an index vector indicating the rows of \code{x} that were bin-sampled. 
 }
 \references{
-Helwig, N. E. and Ma, P. (under review). Fast thin-plate splines via bin-sampled knots. \emph{Computational Statistics & Data Analysis}.
+Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
 }
 \author{
 Nathaniel E. Helwig <nhelwig2@illinois.edu>

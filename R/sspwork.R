@@ -12,19 +12,42 @@ sspwork <-
       # get formula
       trmfrm=terms.formula(formula)
       ychk=attr(trmfrm,"response")
-      if(ychk!=1L){stop("Must include same response in formula when entering 'makessa' object.")}
+      if(ychk!=1L){stop("Must include same response in formula when entering 'makessp' object.")}
       et=attr(trmfrm,"factors");   mfdim=dim(et)
       newnames=rownames(et);       tnames=colnames(et)
       mtidx=match(tnames,colnames(sspmk$et))
-      if(any(is.na(mtidx))){stop("Cannot add new effects to formula when entering 'makessa' object.")}
+      if(any(is.na(mtidx))){
+        idxna=which(is.na(mtidx))
+        for(j in idxna){
+          newsplit=unlist(strsplit(tnames[j],":"))
+          lnwsp=length(newsplit)
+          if(lnwsp==1L){
+            stop("Cannot add new effects to formula when entering 'makessp' object.")
+          } else if(lnwsp==2L){
+            newmatch=match(paste(newsplit[2],newsplit[1],sep=":"),colnames(sspmk$et))
+            if(is.na(newmatch)){
+              stop("Cannot add new effects to formula when entering 'makessp' object.")
+            } else{tnames[j]=paste(newsplit[2],newsplit[1],sep=":")}
+          } else if(lnwsp==3L){
+            myperms=matrix(c(3,2,3,1,2,2,3,1,3,1,1,1,2,2,3),ncol=3)
+            newmatch=rep(NA,5)
+            for(k in 1:5){newmatch[k]=match(paste(newsplit[myperms[k,]],collapse=":"),colnames(sspmk$et))}
+            pidx=which(is.na(newmatch)==FALSE)
+            if(length(pidx)>0L){
+              tnames[j]=paste(newsplit[myperms[pidx,]],collapse=":")
+            } else{stop("Cannot add new effects to formula when entering 'makessp' object.")}
+          } else{stop("Cannot add new effects to formula when entering 'makessp' object.")}
+        } # end for(j in idxna)
+        colnames(et)=tnames
+      } # end if(any(is.na(mtidx)))
       oldnames=rownames(sspmk$et)
-      if(newnames[1]!=oldnames[1]){stop("Must include same response in formula when entering 'makessa' object.")}
+      if(newnames[1]!=oldnames[1]){stop("Must include same response in formula when entering 'makessp' object.")}
       newnames=newnames[2:mfdim[1]]
       oldnames=oldnames[2:(sspmk$nxvar+1L)]
       
       # check order of predictors
       midx=match(newnames,oldnames)
-      if(any(is.na(midx))){stop("Cannot include new predictors in formula when entering 'makessa' object. \n Refit model using bigssp function.")}
+      if(any(is.na(midx))){stop("Cannot include new predictors in formula when entering 'makessp' object. \n Refit model using bigssp function.")}
       Etab=matrix(0L,sspmk$nxvar,mfdim[2])
       Etab[midx,]=et[-1,]
       rownames(Etab)=oldnames
@@ -56,8 +79,13 @@ sspwork <-
     ### initialize smoothing parameters
     nbf=length(Kty)
     if(ncol(dps$Qmats)>sspmk$nknots){
-      thetas=smartssp(dps$Qmats,lambdas,Kty,Jty,KtK,KtJ,
-                      JtJ,sspmk$nknots,sspmk$n[2],alpha,sspmk$yty,nbf)
+      if(is.null(sspmk$thetas[1])){
+        thetas=smartssp(dps$Qmats,lambdas,Kty,Jty,KtK,KtJ,
+                        JtJ,sspmk$nknots,sspmk$n[2],alpha,sspmk$yty,nbf)
+      } else{
+        thetas=sspmk$thetas
+        if(length(thetas)!=length(Jnames)){stop("Incorrect input for 'thetas'. See Details of help file.")}
+      }
     } else {thetas=1}
     
     ### estimate optimal smoothing parameters

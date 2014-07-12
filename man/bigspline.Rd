@@ -8,7 +8,8 @@ Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}} and a 
 }
 \usage{
 bigspline(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
-          xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,rseed=1234)
+          xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,
+          rseed=1234,knotcheck=TRUE)
 }
 \arguments{
   \item{x}{
@@ -44,6 +45,9 @@ bigspline(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
   \item{rseed}{
   Random seed. Input to \code{\link{set.seed}} to reproduce same knots when refitting same model. Use \code{rseed=NULL} to generate a different sample of knots each time.
 }
+  \item{knotcheck}{
+If \code{TRUE}, only unique knots are used (for stability).  
+}
 }
 \details{
   To estimate \eqn{\eta} I minimize the penalized least-squares functional \deqn{\frac{1}{n}\sum_{i=1}^{n}(y_{i}-\eta(x_{i}))^{2}+\lambda \int [\ddot{\eta}(x)]^2 dx} where \eqn{\ddot{\eta}} denotes the second derivative of \eqn{\eta} and \eqn{\lambda\geq0} is a smoothing parameter that controls the trade-off between fitting and smoothing the data. 
@@ -75,11 +79,13 @@ bigspline(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
   Gu, C. (2013). \emph{Smoothing spline ANOVA models, 2nd edition}. New York: Springer.
 
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
-
-	Helwig, N. E. and Ma, P. (under review). Fast thin-plate splines via bin-sampled knots. \emph{Computational Statistics & Data Analysis}.
 	
-	Helwig, N. E. and Ma, P. (under review). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
 	
+  Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
+  
+  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
+  
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }
 \author{

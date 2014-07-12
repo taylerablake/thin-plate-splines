@@ -3,6 +3,8 @@ smartssa <-
            KtJ,JtJ,nknots,ndpts,alpha,yty,nbf){
     
     ### get info
+    rsums=rowSums(Etab)[2:nrow(Etab)]
+    if(any(rsums==0L)){ridx=which(rsums==0L); Etab=Etab[-(ridx+1),]}
     nxvar=nrow(Etab)-1L
     gammas=rep(0,nxvar)
     weights=rep(0L,nxvar)

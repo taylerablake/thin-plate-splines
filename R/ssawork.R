@@ -12,19 +12,42 @@ ssawork <-
       # get formula
       trmfrm=terms.formula(formula)
       ychk=attr(trmfrm,"response")
-      if(ychk!=1L){stop("Must include same response in formula when entering 'makessp' object.")}
+      if(ychk!=1L){stop("Must include same response in formula when entering 'makessa' object.")}
       et=attr(trmfrm,"factors");   mfdim=dim(et)
       newnames=rownames(et);       tnames=colnames(et)
       mtidx=match(tnames,colnames(ssamk$et))
-      if(any(is.na(mtidx))){stop("Cannot add new effects to formula when entering 'makessa' object.")}
+      if(any(is.na(mtidx))){
+        idxna=which(is.na(mtidx))
+        for(j in idxna){
+          newsplit=unlist(strsplit(tnames[j],":"))
+          lnwsp=length(newsplit)
+          if(lnwsp==1L){
+            stop("Cannot add new effects to formula when entering 'makessa' object.")
+          } else if(lnwsp==2L){
+            newmatch=match(paste(newsplit[2],newsplit[1],sep=":"),colnames(ssamk$et))
+            if(is.na(newmatch)){
+              stop("Cannot add new effects to formula when entering 'makessa' object.")
+            } else{tnames[j]=paste(newsplit[2],newsplit[1],sep=":")}
+          } else if(lnwsp==3L){
+            myperms=matrix(c(3,2,3,1,2,2,3,1,3,1,1,1,2,2,3),ncol=3)
+            newmatch=rep(NA,5)
+            for(k in 1:5){newmatch[k]=match(paste(newsplit[myperms[k,]],collapse=":"),colnames(ssamk$et))}
+            pidx=which(is.na(newmatch)==FALSE)
+            if(length(pidx)>0L){
+              tnames[j]=paste(newsplit[myperms[pidx,]],collapse=":")
+            } else{stop("Cannot add new effects to formula when entering 'makessa' object.")}
+          } else{stop("Cannot add new effects to formula when entering 'makessa' object.")}
+        } # end for(j in idxna)
+        colnames(et)=tnames
+      } # end if(any(is.na(mtidx)))
       oldnames=rownames(ssamk$et)
-      if(newnames[1]!=oldnames[1]){stop("Must include same response in formula when entering 'makessp' object.")}
+      if(newnames[1]!=oldnames[1]){stop("Must include same response in formula when entering 'makessa' object.")}
       newnames=newnames[2:mfdim[1]]
       oldnames=oldnames[2:(ssamk$nxvar+1L)]
       
       # check order of predictors
       midx=match(newnames,oldnames)
-      if(any(is.na(midx))){stop("Cannot include new predictors in formula when entering 'makessp' object. \n Refit model using bigssp function.")}
+      if(any(is.na(midx))){stop("Cannot include new predictors in formula when entering 'makessa' object. \n Refit model using bigssa function.")}
       Etab=matrix(0L,ssamk$nxvar,mfdim[2])
       Etab[midx,]=et[-1,]
       rownames(Etab)=oldnames
@@ -56,8 +79,16 @@ ssawork <-
     ### initialize smoothing parameters
     nbf=length(Kty)
     if(ssamk$nxvar>1L){
-      gammas=smartssa(dps$Qmats,Etab,Jnames,lambdas,Kty,Jty,KtK,KtJ,
-                      JtJ,ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+      if(is.null(ssamk$gammas[1])){
+        gammas=smartssa(dps$Qmats,Etab,Jnames,lambdas,Kty,Jty,KtK,KtJ,
+                        JtJ,ssamk$nknots,ssamk$n[2],alpha,ssamk$yty,nbf)
+      } else {gammas=ssamk$gammas}
+      if(length(gammas)<ssamk$nxvar){
+        gidx=which(rowSums(Etab)[2:(ssamk$nxvar+1L)]>0)
+        mygammas=rep(0,ssamk$nxvar)
+        mygammas[gidx]=gammas
+        gammas=mygammas
+      }
     } else {gammas=1}
     
     ### estimate optimal smoothing parameters
