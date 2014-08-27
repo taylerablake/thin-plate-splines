@@ -2,8 +2,8 @@ predict.css <-
   function(object,newdata=NULL,se.fit=FALSE,
            effect=c("all","0","lin","non"),...) {
     ###### Predicts for class "css" objects
-    ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: March 17, 2014    
+    ###### Nathaniel E. Helwig (helwig@umn.edu)
+    ###### Last modified: August 26, 2014    
     
     ### check newdata
     effect=effect[1]

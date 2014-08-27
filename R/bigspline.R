@@ -3,8 +3,8 @@ bigspline <-
            xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,
            rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Smoothing Spline
-    ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: July 10, 2014
+    ###### Nathaniel E. Helwig (helwig@umn.edu)
+    ###### Last modified: August 26, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}

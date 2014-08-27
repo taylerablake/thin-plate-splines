@@ -26,8 +26,9 @@ summary.ssa <-
           } # end for(mm in 1:(lenx-1))
         } # end if(chunksize>=ndpts)
       } # end if(is.na(object$modelspec$rparm[1]))
-    } else{yhat=NA}
-    sumssa=list(call=object$call,type=object$type,fitted.values=yhat,residuals=object$yvar-yhat,
+      resid=object$yvar-yhat
+    } else{yhat=resid=NULL}
+    sumssa=list(call=object$call,type=object$type,fitted.values=yhat,residuals=resid,
                 sigma=object$sigma,n=object$ndf[1],df=object$ndf[2],info=object$info,
                 converged=object$converged,iter=object$modelspec$iter,rparm=object$modelspec$rparm,
                 lambda=object$modelspec$lambda,gammas=object$modelspec$gammas)

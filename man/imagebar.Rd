@@ -51,7 +51,7 @@ imagebar(x,y,z,xlim=NULL,ylim=NULL,zlim=NULL,
 	Produces an \code{image} plot with a colorbar.
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 
 \examples{

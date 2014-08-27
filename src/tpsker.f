@@ -1,5 +1,5 @@
 *     bigsplines (www.r-project.org)
-*     Nathaniel E. Helwig <nhelwig2@illinois.edu>
+*     Nathaniel E. Helwig <helwig@umn.edu>
 *     ***** inputs *****
 *     x   double matrix of dimension n by p
 *     k   double matrix of dimension q by p

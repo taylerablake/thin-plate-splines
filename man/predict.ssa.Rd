@@ -54,7 +54,7 @@ Get fitted values and standard error estimates for smoothing spline anova models
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \details{
 	Uses the coefficient and smoothing parameter estimates from a fit smoothing spline anova (estimated by \code{\link{bigssa}}) to predict for new data.

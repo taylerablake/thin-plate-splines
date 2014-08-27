@@ -69,12 +69,12 @@ ssawork <-
     Jnames=colnames(dps$Jmat)[seq(1,jdim[2],by=ssamk$nknots)]
     
     ### get cross-product matrices
-    wsqrt=sqrt(ssamk$fweights)
-    KtJ=crossprod(dps$Kmat*ssamk$fweights,dps$Jmats)
+    wsqrt=sqrt(ssamk$fweights*ssamk$weights)
+    KtJ=crossprod(dps$Kmat*(ssamk$fweights*ssamk$weights),dps$Jmats)
     KtK=crossprod(dps$Kmat*wsqrt)
     JtJ=crossprod(dps$Jmats*wsqrt)
-    Kty=crossprod(dps$Kmat,ssamk$xvars[[ssamk$nxvar+1]])
-    Jty=crossprod(dps$Jmats,ssamk$xvars[[ssamk$nxvar+1]])
+    Kty=crossprod(dps$Kmat*ssamk$weights,ssamk$xvars[[ssamk$nxvar+1]])
+    Jty=crossprod(dps$Jmats*ssamk$weights,ssamk$xvars[[ssamk$nxvar+1]])
     
     ### initialize smoothing parameters
     nbf=length(Kty)
@@ -226,7 +226,8 @@ ssawork <-
     modelspec=list(myknots=ssamk$theknots,rparm=ssamk$rparm,lambda=newlam,
                    gammas=gammas,gcvopts=ssamk$gcvopts,nxvar=xdim,xrng=ssamk$xrng,
                    flvls=ssamk$flvls,tpsinfo=ssamk$tpsinfo,iter=iter,vtol=vtol,
-                   coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames)
+                   coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames,
+                   fweights=ssamk$fweights,weights=ssamk$weights)
     ssafit=list(fitted.values=yhat,se.fit=pse,yvar=yvar,xvars=ssamk$xvars,
                 type=ssamk$type,yunique=yunique,xunique=xunique,sigma=sqrt(mevar),
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),modelspec=modelspec,

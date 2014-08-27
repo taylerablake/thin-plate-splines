@@ -1,8 +1,8 @@
-predict.ssa <-
-  function(object,newdata=NULL,se.fit=FALSE,
+predict.ssg <-
+  function(object,newdata=NULL,se.lp=FALSE,
            include=c(object$tnames),
            effect=c("all","0","lin","non"),...) {
-    ###### Predicts for class "ssa" objects
+    ###### Predicts for class "ssg" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
     ###### Last modified: August 26, 2014    
     
@@ -13,11 +13,20 @@ predict.ssa <-
     }
     if(effect=="0"){
       yhat=object$modelspec$coef[1]
-      if(se.fit){
-        pse=sqrt(sum(object$modelspec$coef.csqrt[1,]^2))
-        predssa=list(fit=as.numeric(yhat),se.fit=pse)
-      } else {predssa=as.numeric(yhat)}
-      return(predssa)
+      if(object$family=="binomial"){
+        fitvals=1/(1+exp(-yhat))
+      } else if(object$family=="poisson"){
+        fitvals=exp(yhat)
+      } else if(object$family=="Gamma"){
+        fitvals=1/yhat
+      } else if(object$family=="inverse.gaussian"){
+        fitvals=sqrt(1/yhat)
+      } else if(object$family=="negbin"){
+        fitvals=exp(yhat)
+      }
+      pred=list(fitted.values=as.numeric(fitvals),linear.predictors=as.numeric(yhat))
+      if(se.lp){pse=sqrt(sum(object$modelspec$coef.csqrt[1,]^2));  se.lp=list(se.lp=pse);  pred=c(pred,se.lp)} 
+      return(pred)
     }
     xnames=names(object$xvars)
     nxvar=length(object$xvars)
@@ -108,13 +117,13 @@ predict.ssa <-
         gamvec=c(gamvec,prod(object$modelspec$gammas[xidx]))
       }
       yhat=(dps$Jmats%*%kronecker(gamvec,diag(nknots)))%*%object$modelspec$coef[(nbf+1):(nbf+nknots)]
-      if(se.fit){pse=sqrt(postvar(NULL,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[(nbf+1):(nbf+nknots),]))}
+      if(se.lp){pse=sqrt(postvar(NULL,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[(nbf+1):(nbf+nknots),]))}
     } else if(is.null(dps$Jmats)){
       kidx=NULL
       for(k in 1:nbf){kidx=c(kidx,which(object$modelspec$Knames==Knames[k]))}
       kidx=unique(kidx)
       yhat=dps$Kmat%*%object$modelspec$coef[kidx]
-      if(se.fit){pse=sqrt(postvar(dps$Kmat,NULL,object$modelspec$coef.csqrt[kidx,]))}
+      if(se.lp){pse=sqrt(postvar(dps$Kmat,NULL,object$modelspec$coef.csqrt[kidx,]))}
     } else {
       kidx=NULL
       for(k in 1:nbf){kidx=c(kidx,which(object$modelspec$Knames==Knames[k]))}
@@ -126,11 +135,25 @@ predict.ssa <-
         gamvec=c(gamvec,prod(object$modelspec$gammas[xidx]))
       }
       yhat=cbind(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(nknots)))%*%object$modelspec$coef[c(kidx,(nbf+1):(nbf+nknots))]
-      if(se.fit){pse=sqrt(postvar(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[c(kidx,(nbf+1):(nbf+nknots)),]))}
+      if(se.lp){pse=sqrt(postvar(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[c(kidx,(nbf+1):(nbf+nknots)),]))}
     }# end if(is.null(Knames))
     
+    ### make fitted values
+    if(object$family=="binomial"){
+      fitvals=1/(1+exp(-yhat))
+    } else if(object$family=="poisson"){
+      fitvals=exp(yhat)
+    } else if(object$family=="Gamma"){
+      fitvals=1/yhat
+    } else if(object$family=="inverse.gaussian"){
+      fitvals=sqrt(1/yhat)
+    } else if(object$family=="negbin"){
+      fitvals=exp(yhat)
+    }
+    
     ### collect new yhat
-    if(se.fit){predssa=list(fit=as.numeric(yhat),se.fit=pse)} else{predssa=as.numeric(yhat)}
-    return(predssa)
+    pred=list(fitted.values=as.numeric(fitvals),linear.predictors=as.numeric(yhat))
+    if(se.lp){se.lp=list(se.lp=pse);  pred=c(pred,se.lp)} 
+    return(pred)
     
   }

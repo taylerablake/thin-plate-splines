@@ -9,7 +9,7 @@ This function creates a list containing the necessary information to fit a smoot
 \usage{
 makessp(formula,data,type=NULL,nknots=NULL,rparm=NA,
         lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
-        gcvopts=NULL,knotcheck=TRUE,thetas=NULL)
+        gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL)
 }
 \arguments{
   \item{formula}{
@@ -40,13 +40,16 @@ makessp(formula,data,type=NULL,nknots=NULL,rparm=NA,
   Random seed for knot sampling. Input is ignored if \code{nknots} is an input vector of knot indices. Set \code{rseed=NULL} to obtain a different knot sample each time, or set \code{rseed} to any positive integer to use a different seed than the default.
 }
   \item{gcvopts}{
-	Control parameters for optimization. List with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{gcvtol}: covergence tolerange for iterative GCV update, and (c) \code{alpha}: tuning parameter for GCV minimization. Default: \code{gcvopts=list(maxit=5,gcvtol=10^-5,alpha=1)}
+	Control parameters for optimization. List with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{gcvtol}: covergence tolerance for iterative GCV update, and (c) \code{alpha}: tuning parameter for GCV minimization. Default: \code{gcvopts=list(maxit=5,gcvtol=10^-5,alpha=1)}
 }
   \item{knotcheck}{
 If \code{TRUE}, only unique knots are used (for stability).  
 }
   \item{thetas}{
 List of initial smoothing parameters for each predictor subspace. See Details. 
+}
+  \item{weights}{
+Vector of positive weights for fitting (default is vector of ones).  
 }
 }
 \details{
@@ -67,7 +70,7 @@ List of initial smoothing parameters for each predictor subspace. See Details.
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \section{Warning }{
   When inputting a "makessp" class object into \code{\link{bigssp}}, the formula input to \code{bigssp} must be a nested version of the original formula input to \code{makessp}. In other words, you cannot add any new effects after a "makessp" object has been created, but you can drop (remove) effects from the model.

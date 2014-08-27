@@ -3,8 +3,8 @@ predict.ssp <-
            include=c(object$tnames),
            effect=c("all","0","lin","non"),...) {
     ###### Predicts for class "ssp" objects
-    ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: March 19, 2014    
+    ###### Nathaniel E. Helwig (helwig@umn.edu)
+    ###### Last modified: August 26, 2014    
     
     ### check newdata
     effect=effect[1]

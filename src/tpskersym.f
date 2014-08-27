@@ -1,11 +1,10 @@
 *     bigsplines (www.r-project.org)
-*     Nathaniel E. Helwig <nhelwig2@illinois.edu>
+*     Nathaniel E. Helwig <helwig@umn.edu>
 *     ***** inputs *****
 *     x   double matrix of dimension n by p
 *     n   integer
 *     p   integer
 *     y   double matrix of dimension n by n (all 0)
-
 
       subroutine tpskersym(x, n, p, y)
 

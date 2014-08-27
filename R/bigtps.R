@@ -3,8 +3,8 @@ bigtps <-
            alpha=1,lambdas=NULL,se.fit=FALSE,
            rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Thin-Plate Spline
-    ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: July 11, 2014
+    ###### Nathaniel E. Helwig (helwig@umn.edu)
+    ###### Last modified: August 26, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}

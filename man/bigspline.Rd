@@ -89,7 +89,7 @@ If \code{TRUE}, only unique knots are used (for stability).
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \note{
 	The spline is estimated using penalized least-squares, which does not require the Gaussian error assumption. However, the spline inference information (e.g., standard errors and fit information) requires the Gaussian error assumption.

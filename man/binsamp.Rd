@@ -33,7 +33,7 @@ Returns an index vector indicating the rows of \code{x} that were bin-sampled.
 Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \note{
 The number of returned knots will depend on the distribution of the covariate scores. The maximum number of possible bin-sampled knots is \eqn{s\prod_{j=1}^{p}b_{j}}, but fewer knots will be returned if one (or more) of the bins is empty (i.e., if there is no data in one or more bins).

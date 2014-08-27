@@ -48,7 +48,7 @@ Get fitted values and standard error estimates for thin-plate splines.
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \details{
 	Uses the coefficient and smoothing parameter estimates from a fit thin-plate spline (estimated by \code{\link{bigtps}}) to predict for new data.

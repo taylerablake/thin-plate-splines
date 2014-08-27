@@ -1,5 +1,5 @@
 *     bigsplines (www.r-project.org)
-*     Nathaniel E. Helwig <nhelwig2@illinois.edu>
+*     Nathaniel E. Helwig <helwig@umn.edu>
 *     ***** inputs *****
 *     y   double vector of length n
 *     g   integer vector of length n
@@ -7,7 +7,6 @@
 *     m   integer (number of possible unique points)
 *     s   double vector of length m (all 0.0)
 *     w   integer vector of length m (all 0)
-
 
        subroutine sumfreq(y, g, n, m, s, w)
 

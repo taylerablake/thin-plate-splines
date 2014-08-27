@@ -24,8 +24,9 @@ summary.css <-
           } # end for(mm in 1:(lenx-1))
         } # end if(chunksize>=ndpts)
       } # end if(is.na(object$rparm[1]))
-    } else{yhat=NA}
-    sumspline=list(call=NA,type=object$type,fitted.values=yhat,residuals=object$y-yhat,
+      resid=object$y-yhat
+    } else{yhat=resid=NULL}
+    sumspline=list(call=NA,type=object$type,fitted.values=yhat,residuals=resid,
                    sigma=object$sigma,n=ndpts,df=object$ndf[2],info=object$info,
                    converged=NA,iter=NA,rparm=object$rparm,lambda=object$lambda)
     class(sumspline)<-"summary.css"

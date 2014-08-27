@@ -1,6 +1,6 @@
 pinvsm <- 
 function(X,tol=.Machine$double.eps){
-  # pseudoinvse for symmetric matrices
+  # pseudoinverse for symmetric matrices
   
   xeig=eigen(X,symmetric=TRUE)
   nze=sum(xeig$val>xeig$val[1]*tol)

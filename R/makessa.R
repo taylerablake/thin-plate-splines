@@ -1,10 +1,10 @@
 makessa <-
   function(formula,data,type=NULL,nknots=NULL,rparm=NA,
            lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
-           gcvopts=NULL,knotcheck=TRUE,gammas=NULL){
+           gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL){
     ###### Makes Smoothing Spline Anova models
-    ###### Nathaniel E. Helwig (nhelwig2@illinois.edu)
-    ###### Last modified: July 11, 2014
+    ###### Nathaniel E. Helwig (helwig@umn.edu)
+    ###### Last modified: August 26, 2014
     
     ### get initial info 
     mf=match.call()
@@ -29,11 +29,32 @@ makessa <-
     if(nrow(yvar)!=ndpts){stop("Response vector must have same length as predictors.")}
     ysm=sum(yvar);  nunewr=ndpts;  fweights=rep.int(1L,ndpts);  yty=crossprod(yvar)
     
+    ### check gcvopts
+    if(is.null(gcvopts[1])==FALSE){
+      gmatch=match(c("maxit","gcvtol","alpha"),names(gcvopts))
+      if(any(is.na(gmatch))){stop("Invalid input for 'gcvopts'.")}
+      gcvopts$maxit=as.integer(gcvopts$maxit[1])
+      gcvopts$gcvtol=gcvopts$gcvtol[1]
+      gcvopts$alpha=gcvopts$alpha[1]
+      ugcv=unlist(gcvopts)
+      if(any(ugcv<=0)){stop("Invalid input for 'gcvopts'.")}
+      if(gcvopts$maxit<1L){stop("Invalid input for gcvopts$maxit")}
+    }
+    
     ### check formula
     testform=strsplit(as.character(formula),":")
     for(k in 1:length(testform)){
       if(length(testform[[k]])>1L){stop("Formula syntax 'x1:x2' is not supported (i.e., main effects must accompany interactions). \n  Use 'x1*x2' to include interaction with main effects.")}
     }
+    
+    ### check weights
+    if(is.null(weights[1])==FALSE){
+      weights=as.numeric(weights)
+      if(length(weights)!=ndpts){stop("Weights vector must have same length as response.")}
+      if(any(weights<=0)){stop("Weights must be positive.")}
+      if(is.na(rparm[1])==FALSE & min(weights)<=0.005){stop("Minimum weight is too small (less than 0.005).")}
+      wtchk=TRUE
+    } else {weights=1; wtchk=FALSE}
     
     ### check order of things for nonparametric predictors
     if(any(type=="prm")){stop("Parametric predictors are not supported. Use 'bigssp' function.")}
@@ -153,6 +174,12 @@ makessa <-
           xvars[[k]]=as.matrix(gidx*rparm[[k]]);  rm(gidx)
         }
       } # end for(k in 1:nxvar)
+      # account for weights
+      if(wtchk){
+        rmw=round(min(weights)/.01)*.01
+        gvec = gvec + kconst*round((weights-rmw)/.01)
+        weights=round(weights/.01)*.01
+      }
       # get unique points, frequencies, and sums
       gvec=as.factor(gvec)
       glindx=split(cbind(1:ndpts,yvar),gvec)
@@ -160,6 +187,7 @@ makessa <-
       fs=matrix(unlist(lapply(glindx,unifqsum)),ncol=3,byrow=TRUE)
       for(k in 1:nxvar){xvars[[k]]=as.matrix(xvars[[k]][fs[,1],])}
       yvar=fs[,2];  fweights=fs[,3];   nunewr=length(yvar)
+      if(wtchk){weights=weights[fs[,1]]}
     } # end if(is.na(rparm[1]))
     
     ### get knot indices
@@ -194,7 +222,7 @@ makessa <-
                fweights=fweights,type=type,xdim=xdim,theknots=theknots,nknots=nknots,
                lambdas=lambdas,rks=rks[1:4],gcvopts=gcvopts,xorig=xorig,yorig=yorig,
                se.fit=se.fit,skip.iter=skip.iter,ysm=ysm,rparm=rparm,xrng=xrng,
-               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,gammas=gammas)
+               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,gammas=gammas,weights=weights)
     class(ssamk)<-"makessa"
     return(ssamk)
     

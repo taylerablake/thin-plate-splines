@@ -24,8 +24,9 @@ summary.tps <-
           } # end for(mm in 1:(lenx-1))
         } # end if(chunksize>=ndpts)
       } # end if(is.na(object$rparm[1]))
-    } else{yhat=NA}
-    sumtps=list(call=NA,type="tps",fitted.values=yhat,residuals=object$y-yhat,
+      resid=object$y-yhat
+    } else{yhat=resid=NULL}
+    sumtps=list(call=NA,type="tps",fitted.values=yhat,residuals=resid,
                 sigma=object$sigma,n=ndpts,df=object$ndf[2],info=object$info,
                 converged=NA,iter=NA,rparm=object$rparm,lambda=object$lambda)
     class(sumtps)<-"summary.tps"

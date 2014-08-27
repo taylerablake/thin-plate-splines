@@ -50,7 +50,7 @@ Get fitted values and standard error estimates for cubic smoothing splines.
 	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
 }
 \author{
-Nathaniel E. Helwig <nhelwig2@illinois.edu>
+Nathaniel E. Helwig <helwig@umn.edu>
 }
 \details{
 	Uses the coefficient and smoothing parameter estimates from a fit cubic smoothing spline (estimated by \code{\link{bigspline}}) to predict for new data.

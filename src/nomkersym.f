@@ -1,5 +1,5 @@
 *     bigsplines (www.r-project.org)
-*     Nathaniel E. Helwig <nhelwig2@illinois.edu>
+*     Nathaniel E. Helwig <helwig@umn.edu>
 *     ***** inputs *****
 *     x   integer vector of dimension n by 1
 *     n   integer
