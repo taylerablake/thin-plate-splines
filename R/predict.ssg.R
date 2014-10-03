@@ -1,16 +1,13 @@
 predict.ssg <-
-  function(object,newdata=NULL,se.lp=FALSE,
-           include=c(object$tnames),
-           effect=c("all","0","lin","non"),...) {
+  function(object,newdata=NULL,se.lp=FALSE,include=object$tnames,
+           effect=c("all","0","lin","non"),includeint=FALSE,...) {
     ###### Predicts for class "ssg" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: August 26, 2014    
+    ###### Last modified: October 2, 2014
     
     ### check newdata
     effect=effect[1]
-    if(any(effect==c("all","0","lin","non"))==FALSE){
-      stop("Must set 'effect' to one of four specified options.")
-    }
+    if(any(effect==c("all","0","lin","non"))==FALSE){stop("Must set 'effect' to one of four specified options.")}
     if(effect=="0"){
       yhat=object$modelspec$coef[1]
       if(object$family=="binomial"){
@@ -39,6 +36,7 @@ predict.ssg <-
       midx=match(newDnames,xnames)
       widx=which(is.na(midx))
       if(length(widx)>0){
+        if(length(widx)==length(newdata)){stop("Variable names in 'newdata' must match those of 'xvars' element of input 'object'.")}
         midx=midx[-widx]; newdata=newdata[-widx]; newDnames=newDnames[-widx]
         midx=match(newDnames,xnames)
       }
@@ -67,6 +65,7 @@ predict.ssg <-
     Etab[etidx,]=et[-1,];             Etab=rbind(0L,Etab)
     
     ### check for missing and transform
+    newdim=rep(NA,nxvar)
     for(k in 1:nxvar){
       if(sum(Etab[k+1L,])>0){
         if(any(is.na(newdata[[k]]))){
@@ -82,11 +81,9 @@ predict.ssg <-
         if(any(object$type[[k]]==c("cub","cub0","per"))){
           newdata[[k]]=(newdata[[k]]-object$modelspec$xrng[[k]][1])/(object$modelspec$xrng[[k]][2]-object$modelspec$xrng[[k]][1])
         } 
-      } else if(object$type[[k]]=="nom"){
-        fidx=match(newdata[[k]],object$modelspec$flvls[[k]])
-        if(any(is.na(fidx))){stop(paste("Inappropriate 'newdata' for",xnames[k],"(factor levels don't match)."))}
-        newdata[[k]]=as.matrix(fidx)
-      } # end if(sum(Etab[k+1L,])>0)
+        newdim[k]=nrow(newdata[[k]])
+        if(k>1L && newdim[k]!=max(newdim,na.rm=TRUE)){stop("Must have same number of observations for each covariate in newdata.")}
+      } else newdata[[k]]=NA # end if(sum(Etab[k+1L,])>0)
     } # end for(k in 1:nxvar)
     
     ### make marginal reproducing kernel matrices
@@ -94,7 +91,7 @@ predict.ssg <-
                 pred=TRUE,tpsinfo=object$modelspec$tpsinfo)
     
     ### make design and penalty matrices
-    if(lnt==length(oldnames) && effect=="all"){intid=TRUE} else {intid=FALSE}
+    if(lnt==length(oldnames) && effect=="all"){intid=TRUE} else {intid=includeint}
     dps=ssadpm(newdata,object$type,rks[1:3],object$modelspec$myknots,
                Etab,pred=TRUE,effect,intid)
     Knames=colnames(dps$Kmat)
@@ -144,8 +141,10 @@ predict.ssg <-
     } else if(object$family=="poisson"){
       fitvals=exp(yhat)
     } else if(object$family=="Gamma"){
+      yhat[yhat<=0]=10^-4
       fitvals=1/yhat
     } else if(object$family=="inverse.gaussian"){
+      yhat[yhat<=0]=10^-4
       fitvals=sqrt(1/yhat)
     } else if(object$family=="negbin"){
       fitvals=exp(yhat)

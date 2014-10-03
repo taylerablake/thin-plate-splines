@@ -2,7 +2,7 @@
 \alias{bigsplines-package}
 \alias{bigsplines}
 \docType{package}
-\title{Smoothing splines for large samples}
+\title{Smoothing Splines for Large Samples}
 \description{
 Fits smoothing spline regression models using scalable algorithms designed for large samples. Options include: (a) spline knots can be user-selected, randomly sampled, or bin-sampled throughout the covariate domain, (b) rounding parameters can be provided, and (c) parametric effects can be included. Supports 2-way and 3-way interactions between any combination of nonparametric and parametric predictors.
 }
@@ -34,7 +34,7 @@ Maintainer: Nathaniel E. Helwig <helwig@umn.edu>
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \keyword{ package }
 \examples{

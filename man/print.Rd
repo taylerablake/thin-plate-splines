@@ -11,7 +11,7 @@
 \alias{print.summary.tps}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Prints fit information for big splines model
+Prints Fit Information for bigsplines Model
 }
 \description{
 This function prints basic model fit information for a fit \code{bigsplines} model.

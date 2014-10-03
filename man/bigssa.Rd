@@ -1,7 +1,7 @@
 \name{bigssa}
 \alias{bigssa}
 \title{
-Fits smoothing spline anova models
+Fits Smoothing Spline ANOVA Models
 }
 \description{
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a Smoothing Spline Anova (SSA) has the form \deqn{y_{i}= \eta(\mathbf{x}_{i}) + e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{\mathbf{x}_{i}=(x_{i1},\ldots,x_{ip})} is the \eqn{i}-th observation's nonparametric predictor vector, \eqn{\eta} is an unknown smooth function relating the response and nonparametric predictors, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error. Function can fit additive models, and also allows for 2-way and 3-way interactions between any number of predictors (see Details and Examples).
@@ -84,7 +84,7 @@ Vector of positive weights for fitting (default is vector of ones).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

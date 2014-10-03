@@ -1,7 +1,7 @@
 \name{makessp}
 \alias{makessp}
 \title{
-Makes objects to fit smoothing splines with parametric effects
+Makes Objects to Fit Smoothing Splines with Parametric Effects
 }
 \description{
 This function creates a list containing the necessary information to fit a smoothing spline with parametric effects (see \code{\link{bigssp}}). 
@@ -67,7 +67,7 @@ Vector of positive weights for fitting (default is vector of ones).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

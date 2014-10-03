@@ -1,7 +1,7 @@
 \name{binsamp}
 \alias{binsamp}
 \title{
-Bin-samples strategic knot indices
+Bin-Samples Strategic Knot Indices
 }
 \description{
 Breaks the predictor domain into a user-specified number of disjoint subregions, and randomly samples a user-specified number of observations from each (nonempty) subregion. 

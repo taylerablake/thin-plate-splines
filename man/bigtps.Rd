@@ -1,7 +1,7 @@
 \name{bigtps}
 \alias{bigtps}
 \title{
-Fits cubic thin-plate splines
+Fits Cubic Thin-Plate Splines
 }
 \description{
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a thin-plate spline model has the form \deqn{y_{i}=\eta(\mathbf{x}_{i})+e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{\mathbf{x}_{i}=(x_{i1},\ldots,x_{id})} is the \eqn{i}-th observation's nonparametric predictor vector, \eqn{\eta} is an unknown smooth function relating the response and predictor, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error. Function only fits interaction models.
@@ -75,7 +75,7 @@ If \code{TRUE}, only unique knots are used (for stability).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

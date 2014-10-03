@@ -1,15 +1,14 @@
 \name{predict.ssa}
 \alias{predict.ssa}
 \title{
-Predicts for "ssa" objects
+Predicts for "ssa" Objects
 }
 \description{
 Get fitted values and standard error estimates for smoothing spline anova models. 
 }
 \usage{
-\method{predict}{ssa}(object,newdata=NULL,se.fit=FALSE,
-        include=c(object$tnames),
-        effect=c("all","0","lin","non"),...)
+\method{predict}{ssa}(object,newdata=NULL,se.fit=FALSE,include=object$tnames,
+        effect=c("all","0","lin","non"),includeint=FALSE,...)
 }
 \arguments{
   \item{object}{
@@ -24,8 +23,11 @@ Get fitted values and standard error estimates for smoothing spline anova models
   \item{include}{
 	Which terms to include in the estimate. You can get fitted values for any combination of terms in the \code{tnames} element of an "ssa" object.
 }
-\item{effect}{
+  \item{effect}{
   Which effect to estimate: \code{effect="all"} gives \eqn{\hat{y}} for given terms in \code{include}, \code{effect="lin"} gives linear portion of \eqn{\hat{y}} for given terms in \code{include}, and \code{effect="non"} gives nonlinear portion of \eqn{\hat{y}} for given terms in \code{include}. Use \code{effect="0"} to return the intercept.
+}
+  \item{includeint}{
+  Logical indicating whether the intercept should be included in the prediction. If \code{include=object$tnames} and \code{effect="all"} (default), then this input is ignored and the intercept is automatically included in the prediction.
 }
   \item{\dots}{
 	Ignored.
@@ -51,7 +53,7 @@ Get fitted values and standard error estimates for smoothing spline anova models
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters.
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

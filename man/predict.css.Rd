@@ -1,7 +1,7 @@
 \name{predict.css}
 \alias{predict.css}
 \title{
-Predicts for "css" objects
+Predicts for "css" Objects
 }
 \description{
 Get fitted values and standard error estimates for cubic smoothing splines.
@@ -47,7 +47,7 @@ Get fitted values and standard error estimates for cubic smoothing splines.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters.
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

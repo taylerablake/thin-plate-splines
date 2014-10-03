@@ -1,7 +1,7 @@
 \name{bigssg}
 \alias{bigssg}
 \title{
-Fits generalized smoothing spline anova models
+Fits Generalized Smoothing Spline ANOVA Models
 }
 \description{
 Given an exponential family response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a Generalized Smoothing Spline Anova (GSSA) has the form \deqn{g(\mu_{i}) = \eta(\mathbf{x}_{i})} where \eqn{\mu_{i}} is the expected value of the \eqn{i}-th observation's respone, \eqn{g(\cdot)} is some invertible link function, \eqn{\mathbf{x}_{i}=(x_{i1},\ldots,x_{ip})} is the \eqn{i}-th observation's nonparametric predictor vector, and \eqn{\eta} is an unknown smooth function relating the response and nonparametric predictors. Function can fit additive models, and also allows for 2-way and 3-way interactions between any number of predictors. Response can be one of five non-Gaussian distributions: Binomial, Poisson, Gamma, Inverse Gaussian, or Negative Binomial (see Details and Examples).
@@ -93,7 +93,7 @@ Vector of positive weights for fitting (default is vector of ones).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

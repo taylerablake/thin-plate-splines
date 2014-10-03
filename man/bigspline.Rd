@@ -1,7 +1,7 @@
 \name{bigspline}
 \alias{bigspline}
 \title{
-Fits cubic smoothing splines
+Fits Cubic Smoothing Splines
 }
 \description{
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}} and a real-valued predictor vector \eqn{\mathbf{x}=\{x_{i}\}_{n\times 1}} with \eqn{a \leq x_{i} \leq b \ \forall i}, a smoothing spline model has the form \deqn{y_{i}=\eta(x_{i})+e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{x_{i}} is the \eqn{i}-th observation's predictor, \eqn{\eta} is an unknown smooth function relating the response and predictor, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error.
@@ -86,7 +86,7 @@ If \code{TRUE}, only unique knots are used (for stability).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

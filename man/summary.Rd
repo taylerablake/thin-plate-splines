@@ -6,7 +6,7 @@
 \alias{summary.tps}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Summarizes fit information for big splines model
+Summarizes Fit Information for bigsplines Model
 }
 \description{
 This function summarizes basic model fit information for a fit \code{bigsplines} model.

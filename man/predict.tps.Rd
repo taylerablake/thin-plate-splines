@@ -1,7 +1,7 @@
 \name{predict.tps}
 \alias{predict.tps}
 \title{
-Predicts for "tps" objects
+Predicts for "tps" Objects
 }
 \description{
 Get fitted values and standard error estimates for thin-plate splines.
@@ -45,7 +45,7 @@ Get fitted values and standard error estimates for thin-plate splines.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 	
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters.
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters.
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

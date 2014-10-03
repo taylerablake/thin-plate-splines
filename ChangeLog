@@ -1,3 +1,17 @@
+Changes from ver 1.0-3 to ver 1.0-4     [Oct-03-2014]
+   1) bigsplines-package
+	*   Minor updates for prediction functions.
+	*   Updated some references throughout.
+   2) predict.ssa
+	*   Added option for including intercept.
+	*   Stability and usability improvements.
+   3) predict.ssg
+	*   Added option for including intercept.
+	*   Stability and usability improvements.            
+   4) predict.ssp
+	*   Added option for including intercept.
+	*   Stability and usability improvements.
+
 Changes from ver 1.0-2 to ver 1.0-3     [Aug-26-2014]
    1) bigsplines-package
 	*   Major update: support for non-Gaussian responses (see bigssg and makessg) 

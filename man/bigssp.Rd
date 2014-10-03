@@ -1,7 +1,7 @@
 \name{bigssp}
 \alias{bigssp}
 \title{
-Fits smoothing splines with parametric effects
+Fits Smoothing Splines with Parametric Effects
 }
 \description{
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a semiparametric regression model has the form \deqn{y_{i}= \eta(\mathbf{x}_{i}) + \sum_{j=1}^{t}b_{j}z_{ij} + e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{\mathbf{x}_{i}=(x_{i1},\ldots,x_{ip})} is the \eqn{i}-th observation's nonparametric predictor vector, \eqn{\eta} is an unknown smooth function relating the response and nonparametric predictors, \eqn{\mathbf{z}_{i}=(z_{i1},\ldots,z_{it})} is the \eqn{i}-th observation's parametric predictor vector, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error. Function can fit both additive and interactive non/parametric effects, and allows for 2-way and 3-way interactions between nonparametric and parametric effects (see Details and Examples).
@@ -86,7 +86,7 @@ Vector of positive weights for fitting (default is vector of ones).
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Nonparametric regression for ultra large samples: Scalable computation via rounding parameters. 
+	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

@@ -1,7 +1,7 @@
 \name{imagebar}
 \alias{imagebar}
 \title{
-Displays a color image with colorbar
+Displays a Color Image with Colorbar
 }
 \description{
 This is a modification to the R function \code{\link{image}} that adds a colorbar to the right margin.
