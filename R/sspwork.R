@@ -76,6 +76,67 @@ sspwork <-
     Kty=crossprod(dps$Kmat*sspmk$weights,sspmk$xvars[[sspmk$nxvar+1]])
     Jty=crossprod(dps$Jmats*sspmk$weights,sspmk$xvars[[sspmk$nxvar+1]])
     
+    ### reml estimation of variance components
+    if(!is.null(sspmk$random)){
+      
+      # some initializations
+      XtZ=t(makeZtX(sspmk$lev1var,sspmk$lev2var,dps$Kmat,dps$Jmats,sspmk$uidx,names(sspmk$ZtZy[[1]])))
+      nbf=length(Kty); cbf=length(Jty)
+      
+      # iterative estimation (if remlalg!="none")
+      if(sspmk$remlalg!="none"){
+        if(jdim[2]>sspmk$nknots){
+          gammat=kronecker(rep(1,jdim[2]/sspmk$nknots),diag(sspmk$nknots));   ktj=KtJ%*%gammat     
+          if(length(sspmk$lev1var)==1L){
+            varhat=remlri(sspmk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(sspmk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
+                          sspmk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),sspmk$n[2]-sspmk$nknots,
+                          tau=sspmk$remlopts$itau,imx=sspmk$remlopts$maxit,tol=sspmk$remlopts$rtol,alg=sspmk$remlalg)
+          } else {
+            varhat=remlvc(sspmk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(sspmk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
+                          sspmk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),sspmk$n[2]-sspmk$nknots,rdm=sspmk$ZtZy[[3]],
+                          tau=sspmk$remlopts$itau,imx=sspmk$remlopts$maxit,tol=sspmk$remlopts$rtol,alg=sspmk$remlalg)
+          }
+          rm(ktj)
+        } else {
+          if(length(sspmk$lev1var)==1L){
+            varhat=remlri(sspmk$yty,rbind(Kty,Jty),matrix(sspmk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
+                          sspmk$ZtZy[[2]],XtZ,sspmk$n[2]-sspmk$nknots,tau=sspmk$remlopts$itau,imx=sspmk$remlopts$maxit,tol=sspmk$remlopts$rtol,alg=sspmk$remlalg)
+          } else{
+            varhat=remlvc(sspmk$yty,rbind(Kty,Jty),matrix(sspmk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
+                          sspmk$ZtZy[[2]],XtZ,sspmk$n[2]-sspmk$nknots,rdm=sspmk$ZtZy[[3]],tau=sspmk$remlopts$itau,imx=sspmk$remlopts$maxit,tol=sspmk$remlopts$rtol,alg=sspmk$remlalg)
+          }
+        }
+        tau=varhat$tau;  remlinfo=varhat[3:4]
+        if(varhat$cnvg==FALSE){warning("REML estimation algorithm failed to converge. \nTry another algorithm (remlalg) or change REML estimation options (remlopts).")}
+      } else {tau=sspmk$remlopts$itau;  remlinfo=NULL}
+      nvc=sspmk$ZtZy[[3]]
+      if(length(sspmk$lev1var)>1L){names(tau)=levels(sspmk$lev2var)}
+      
+      # check for negative variance components
+      if(any(tau<=0)){
+        tau[tau<=0]=10^-4
+        warning("REML estimation produced variance component estimates <= 0. \nOffending variance components are set to 10^-4 for estimation.")
+      }
+      
+      # redefine crossproducts
+      csqrt=(sspmk$ZtZy[[2]]+rep(1/tau,times=nvc))^(-0.5)
+      XtZc=XtZ*rep(csqrt,each=(nbf+cbf))
+      if(nbf>1L){
+        KtK = (KtK-tcrossprod(XtZc[1:nbf,]))
+        KtJ = (KtJ-tcrossprod(XtZc[1:nbf,],XtZc[(nbf+1):(nbf+cbf),]))
+        Kty = (Kty-(XtZc[1:nbf,])%*%(sspmk$ZtZy[[1]]*csqrt))
+      } else {
+        nxtz=ncol(XtZc)
+        KtK = (KtK-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz)))
+        KtJ = (KtJ-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz),XtZc[(nbf+1):(nbf+cbf),]))
+        Kty = (Kty-matrix(XtZc[1:nbf,],nbf,nxtz)%*%(sspmk$ZtZy[[1]]*csqrt))
+      }
+      JtJ = (JtJ-tcrossprod(XtZc[(nbf+1):(nbf+cbf),]))
+      Jty = (Jty-(XtZc[(nbf+1):(nbf+cbf),])%*%(sspmk$ZtZy[[1]]*csqrt))
+      sspmk$yty = (sspmk$yty-crossprod(sspmk$ZtZy[[1]]*csqrt))
+      
+    } else {tau=remlinfo=NULL}
+    
     ### initialize smoothing parameters
     nbf=length(Kty)
     if(ncol(dps$Qmats)>sspmk$nknots){
@@ -182,6 +243,7 @@ sspwork <-
     
     ### calculate vaf
     mval=sspmk$ysm/sspmk$n[2]
+    if(!is.null(sspmk$random)){mval=sum(sqrt(1-(sspmk$ZtZy[[2]]/(sspmk$ZtZy[[2]]+rep(1/tau,times=nvc))))*sspmk$ZtZy[[1]])/sspmk$n[2]}
     vaf=1-sseval/(sspmk$yty-sspmk$n[2]*(mval^2))
     
     ### retransform predictors
@@ -198,6 +260,15 @@ sspwork <-
       xunique=sspmk$xvars[1:sspmk$nxvar];  sspmk$xvars=sspmk$xorig
     } else{xunique=yunique=NA;  yvar=sspmk$xvars[[sspmk$nxvar+1]]; sspmk$xvars=sspmk$xvars[1:sspmk$nxvar]}
     
+    ### check for random (get blup)
+    if(!is.null(sspmk$random)){
+      if(jdim[2]>sspmk$nknots){
+        thmat=kronecker(thetas,diag(sspmk$nknots))
+        XtZ=rbind(XtZ[1:nbf,],crossprod(thmat,XtZ[(nbf+1):(nbf+cbf),]))
+      }
+      bhat=ssblup(sspmk$ZtZy[[1]],t(XtZ),sspmk$ZtZy[[2]],dchat,sspmk$ZtZy[[3]],tau)
+    } else {bhat=NULL}
+    
     ### collect results
     names(thetas)=Jnames
     if(sspmk$skip.iter==FALSE && vtol<=gcvtol){cvg=TRUE}
@@ -206,11 +277,12 @@ sspwork <-
                    thetas=thetas,gcvopts=sspmk$gcvopts,nxvar=xdim,xrng=sspmk$xrng,
                    flvls=sspmk$flvls,tpsinfo=sspmk$tpsinfo,iter=iter,vtol=vtol,
                    coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames,
-                   fweights=sspmk$fweights,weights=sspmk$weights)
+                   fweights=sspmk$fweights,weights=sspmk$weights,remlalg=sspmk$remlalg,
+                   remlopts=sspmk$remlopts,remlinfo=remlinfo)
     sspfit=list(fitted.values=yhat,se.fit=pse,yvar=yvar,xvars=sspmk$xvars,
                 type=sspmk$type,yunique=yunique,xunique=xunique,sigma=sqrt(mevar),
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),modelspec=modelspec,
-                converged=cvg,tnames=tnames)
+                converged=cvg,tnames=tnames,random=sspmk$random,tau=tau,blup=bhat)
     return(sspfit)
     
   }

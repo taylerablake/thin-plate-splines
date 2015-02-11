@@ -4,7 +4,7 @@ bigspline <-
            rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Smoothing Spline
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: August 26, 2014
+    ###### Last modified: October 30, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}
@@ -132,7 +132,7 @@ bigspline <-
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),
                 xrng=xrng,myknots=theknots,rparm=rparm,lambda=lambda,
                 coef=dchat,coef.csqrt=csqrt)
-    class(sspfit)<-"css"
+    class(sspfit)<-"bigspline"
     return(sspfit)
     
   }

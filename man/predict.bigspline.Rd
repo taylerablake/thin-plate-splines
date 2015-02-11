@@ -1,18 +1,18 @@
-\name{predict.css}
-\alias{predict.css}
+\name{predict.bigspline}
+\alias{predict.bigspline}
 \title{
-Predicts for "css" Objects
+Predicts for "bigspline" Objects
 }
 \description{
 Get fitted values and standard error estimates for cubic smoothing splines.
 }
 \usage{
-\method{predict}{css}(object,newdata=NULL,se.fit=FALSE,
+\method{predict}{bigspline}(object,newdata=NULL,se.fit=FALSE,
         effect=c("all","0","lin","non"),...)
 }
 \arguments{
   \item{object}{
-	Object of class "css", which is output from \code{\link{bigspline}}.
+	Object of class "bigspline", which is output from \code{\link{bigspline}}.
 }
   \item{newdata}{
 	Vector containing new data points for prediction. See Details and Example. Default of \code{newdata=NULL} uses original data in \code{object} input.

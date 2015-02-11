@@ -4,7 +4,7 @@ bigtps <-
            rseed=1234,knotcheck=TRUE){
     ###### Fits Cubic Thin-Plate Spline
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: August 26, 2014
+    ###### Last modified: October 30, 2014
     
     ### initial info
     if(is.null(rseed)==FALSE){set.seed(rseed)}
@@ -207,7 +207,7 @@ bigtps <-
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),
                 myknots=theknots,nvec=nvec,rparm=rparm,
                 lambda=lambda,coef=dchat,coef.csqrt=csqrt)
-    class(tpsfit)<-"tps"
+    class(tpsfit)<-"bigtps"
     return(tpsfit)
     
   }

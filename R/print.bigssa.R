@@ -1,4 +1,4 @@
-print.ssp <- 
+print.bigssa <- 
   function(x,...){
     
     xnames=names(x$xvars)
@@ -11,7 +11,7 @@ print.ssp <-
       cat("\nSmoothing Parameter:\n")
       cat(x$modelspec$lambda,"\n ")
     } else {
-      cat("\nPredictor Types:\n")
+      cat("\nSpline Types:\n")
       print(as.data.frame(x$type,row.names=""))
       cat("\nFit Statistics:\n")
       print(x$info)

@@ -7,9 +7,10 @@ Makes Objects to Fit Smoothing Spline ANOVA Models
 This function creates a list containing the necessary information to fit a smoothing spline anova model (see \code{\link{bigssa}}). 
 }
 \usage{
-makessa(formula,data,type=NULL,nknots=NULL,rparm=NA,
+makessa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
         lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
-        gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL)
+        gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
+        random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL)
 }
 \arguments{
   \item{formula}{
@@ -50,6 +51,15 @@ List of initial smoothing parameters for each predictor. See Details.
 }
   \item{weights}{
 Vector of positive weights for fitting (default is vector of ones).  
+}
+  \item{random}{
+Adds random effects to model (see Random Effects section).
+}
+  \item{remlalg}{
+REML algorithm for estimating variance components (see Random Effects section). Input is ignored if \code{is.null(random)}.  
+}
+  \item{remlopts}{
+REML options for estimating variance components (see Random Effects section). Input is ignored if \code{is.null(random)}.  
 }
 }
 \details{

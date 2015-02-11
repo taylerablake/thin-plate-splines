@@ -97,7 +97,7 @@ Nathaniel E. Helwig <helwig@umn.edu>
 \section{Warnings }{
 	Cubic and cubic periodic splines transform the predictor to the interval [0,1] before fitting. So input \code{xmin} must be less than or equal to \code{min(x)}, and input \code{xmax} must be greater than or equal to \code{max(x)}.
     
-  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.css}} function to get fitted values for full \code{y} vector.
+  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.bigspline}} function to get fitted values for full \code{y} vector.
 }
 
 \section{Computational Details }{
@@ -125,7 +125,7 @@ Given the optimal coefficients, the fitted values are given by \eqn{\hat{\mathbf
   For a different cubic spline (\code{type="cub0"}) with \eqn{x \in [0,1]}, the needed functions are \deqn{ \phi_{1}(x) = x \qquad \mbox{and} \qquad \rho(x,z) = (x \wedge z)^2[3(x \vee z) - (x \wedge z)]/6}
 where \eqn{(x \wedge z) = \min(x,z)} and \eqn{(x \vee z) = \max(x,z)}. 
 
-Note that \code{type="cub"} and \code{type="cub0"} use different definitions of the averaging operator in the null space. The overall spline estimates should be the same (up to approximation accuracy), but the null and constrast space effect functions will differ (see \code{\link{predict.css}}). See Helwig (2013) and Gu (2013) for a further discussion of polynomial splines.  
+Note that \code{type="cub"} and \code{type="cub0"} use different definitions of the averaging operator in the null space. The overall spline estimates should be the same (up to approximation accuracy), but the null and constrast space effect functions will differ (see \code{\link{predict.bigspline}}). See Helwig (2013) and Gu (2013) for a further discussion of polynomial splines.  
 
 For a periodic cubic spline (\code{type="per"}) with \eqn{x \in [0,1]}, the needed functions are 
 \deqn{ \phi_{1}(x) = 0 \qquad \mbox{and} \qquad \rho(x,z) = -k_{4}(|x-z|)} where \eqn{k_{4}(x)} is defined as it was for \code{type="cub"}; in this case \eqn{\mathbf{K}=\mathbf{1}_{n}} and \eqn{\mathbf{d}=d_{0}}.

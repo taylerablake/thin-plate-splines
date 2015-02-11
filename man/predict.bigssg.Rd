@@ -1,18 +1,18 @@
-\name{predict.ssg}
-\alias{predict.ssg}
+\name{predict.bigssg}
+\alias{predict.bigssg}
 \title{
-Predicts for "ssg" Objects
+Predicts for "bigssg" Objects
 }
 \description{
 Get fitted values and standard error estimates for generalized smoothing spline anova models. 
 }
 \usage{
-\method{predict}{ssg}(object,newdata=NULL,se.lp=FALSE,include=object$tnames,
-        effect=c("all","0","lin","non"),includeint=FALSE,...)
+\method{predict}{bigssg}(object,newdata=NULL,se.lp=FALSE,include=object$tnames,
+        effect=c("all","0","lin","non"),includeint=FALSE,design=FALSE,...)
 }
 \arguments{
   \item{object}{
-	Object of class "ssg", which is output from \code{\link{bigssg}}.
+	Object of class "bigssg", which is output from \code{\link{bigssg}}.
 }
   \item{newdata}{
 	Data frame or list containing the new data points for prediction. Variable names must match those used in the \code{formula} input of \code{\link{bigssg}}. See Details and Example. Default of \code{newdata=NULL} uses original data in \code{object} input.
@@ -21,7 +21,7 @@ Get fitted values and standard error estimates for generalized smoothing spline 
 	Logical indicating if the standard errors of the linear predictors (\eqn{\eta}) should be estimated. Default is \code{se.lp=FALSE}.
 }
   \item{include}{
-	Which terms to include in the estimate. You can get fitted values for any combination of terms in the \code{tnames} element of an "ssg" object.
+	Which terms to include in the estimate. You can get fitted values for any combination of terms in the \code{tnames} element of an "bigssg" object.
 }
   \item{effect}{
   Which effect to estimate: \code{effect="all"} gives \eqn{\hat{y}} for given terms in \code{include}, \code{effect="lin"} gives linear portion of \eqn{\hat{y}} for given terms in \code{include}, and \code{effect="non"} gives nonlinear portion of \eqn{\hat{y}} for given terms in \code{include}. Use \code{effect="0"} to return the intercept.
@@ -29,29 +29,20 @@ Get fitted values and standard error estimates for generalized smoothing spline 
   \item{includeint}{
   Logical indicating whether the intercept should be included in the prediction. If \code{include=object$tnames} and \code{effect="all"} (default), then this input is ignored and the intercept is automatically included in the prediction.
 }
+  \item{design}{
+  Logical indicating whether the design matrix should be returned.
+}
   \item{\dots}{
 	Ignored.
 }
 }
 \value{
-  For \code{se.lp=FALSE}, returns list with two components:
-  \item{fitted.values}{
-  Vector of fitted values (on data scale)
-}
-\item{linear.predictors}{
-  Vector of fitted values (on link scale)
-}
-
-  For \code{se.lp=TRUE}, rreturns list with three components:
-  \item{fitted.values}{
-  Vector of fitted values (on data scale)
-}
-\item{linear.predictors}{
-  Vector of fitted values (on link scale)
-}
-\item{se.lp}{
-  Vector of standard errors of linear predictors (on link scale)
-}
+  Returns list with elements:
+  \item{fitted.values}{Vector of fitted values (on data scale)}
+  \item{linear.predictors}{Vector of fitted values (on link scale)}
+  \item{se.lp}{Vector of standard errors of linear predictors (if \code{se.lp=TRUE})}
+  \item{X}{Design matrix used to create linear predictors (if \code{design=TRUE})}
+  \item{ix}{Index vector such that \code{linear.predictors=X\%*\%object$modelspec$coef[ix]} (if \code{design=TRUE})}
 }
 \references{
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.

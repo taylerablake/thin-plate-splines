@@ -88,7 +88,7 @@ ssgwork <-
         gammas=smartssg(Etab,lambdas,ssgmk$family,dps$Kmat,dps$Jmats,Jnames,
                         ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                         ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                        inmaxit,intol,insub,ssgmk$dispersion)
+                        inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)
       } else {gammas=ssgmk$gammas}
       if(length(gammas)<ssgmk$nxvar){
         gidx=which(rowSums(Etab)[2:(ssgmk$nxvar+1L)]>0)
@@ -110,7 +110,7 @@ ssgwork <-
       fxhat=lamcoefg(lambdas,gamvec,ssgmk$family,dps$Kmat,dps$Jmats,
                      ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                      ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                     inmaxit,intol,insub,ssgmk$dispersion)
+                     inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)
       fhat=fxhat[[1]]
       dchat=fhat[1:(nbf+ssgmk$nknots)]
       gcv=fhat[nbf+ssgmk$nknots+1]
@@ -156,26 +156,26 @@ ssgwork <-
       
       # iterate estimates of lambda and etas until convergence
       vtol=1;   gcv=sum(ssgmk$yty);   iter=0L;  cvg=FALSE
-      while(vtol>gcvtol && iter<maxit && min(c(gammas,gcv))>0) {
+      while(vtol>gcvtol && iter<maxit && min(gammas)>0) {
         
         if(ssgmk$nxvar==1L){
           if(length(lambdas)>1){
             newlam=lamloopg(lambdas,gammas,ssgmk$family,dps$Kmat,dps$Jmats,
                             ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                             ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                            inmaxit,intol,insub,ssgmk$dispersion)
+                            inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)
           } else{newlam=lambdas}
           gcvopt=nlm(f=gcvgss,p=log(newlam),family=ssgmk$family,Kmat=dps$Kmat,Jmat=dps$Jmats,
                      yvar=ssgmk$xvars[[ssgmk$nxvar+1]],Qmat=dps$Qmats,nknots=ssgmk$nknots,
                      ndpts=ssgmk$n[2],alpha=alpha,yty=ssgmk$yty,nbf=nbf,
                      fweights=ssgmk$fweights,weights=ssgmk$weights,maxit=inmaxit,intol=intol,
-                     subsamp=insub,dispersion=ssgmk$dispersion)
+                     subsamp=insub,dispersion=ssgmk$dispersion,gcvtype=ssgmk$gcvtype)
           gcv=gcvopt$min;    oldlam=newlam;  newlam=exp(gcvopt$est);
           if(ssgmk$family=="negbin" & estdisp){
             fhat=lamcoefg(newlam,1,ssgmk$family,dps$Kmat,dps$Jmats,
                           ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                           ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                          inmaxit,intol,insub,ssgmk$dispersion)[[1]]
+                          inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)[[1]]
             mu0=exp(cbind(dps$Kmat,dps$Jmats%*%kronecker(1,diag(ssgmk$nknots)))%*%fhat[1:(nbf+ssgmk$nknots)])
             size=nbmle(ssgmk$yorig,mu0,1/ssgmk$dispersion,ssgmk$fweights,ssgmk$n[2],ssgmk$xvars[[ssgmk$nxvar+1]])
             vtol=abs((oldlam-newlam)/oldlam)
@@ -193,7 +193,7 @@ ssgwork <-
           newlam=lamloopg(lambdas,gamvec,ssgmk$family,dps$Kmat,dps$Jmats,
                           ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                           ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                          inmaxit,intol,insub,ssgmk$dispersion)
+                          inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)
           
           # step 2: find optimal etas given lambda
           gcvopt=nlm(f=gcvssg,p=log(gammas),newlam=newlam,family=ssgmk$family,
@@ -201,7 +201,7 @@ ssgwork <-
                      Qmats=dps$Qmats,nknots=ssgmk$nknots,ndpts=ssgmk$n[2],alpha=alpha,
                      yty=ssgmk$yty,nbf=nbf,fweights=ssgmk$fweights,weights=ssgmk$weights,
                      xnames=xnames,Jnames=Jnames,maxit=inmaxit,intol=intol,subsamp=insub,
-                     dispersion=ssgmk$dispersion)
+                     dispersion=ssgmk$dispersion,gcvtype=ssgmk$gcvtype)
           newgcv=gcvopt$min
           
           # step 3: check for convergence
@@ -221,8 +221,8 @@ ssgwork <-
             fhat=lamcoefg(newlam,gamvec,ssgmk$family,dps$Kmat,dps$Jmats,
                           ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                           ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                          inmaxit,intol,insub,ssgmk$dispersion)[[1]]
-            mu0=exp(cbind(dps$Kmat,dps$Jmats%*%kronecker(1,diag(ssgmk$nknots)))%*%fhat[1:(nbf+ssgmk$nknots)])
+                          inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)[[1]]
+            mu0=exp(cbind(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(ssgmk$nknots)))%*%fhat[1:(nbf+ssgmk$nknots)])
             size=nbmle(ssgmk$yorig,mu0,1/ssgmk$dispersion,ssgmk$fweights,ssgmk$n[2],ssgmk$xvars[[ssgmk$nxvar+1]])
             ssgmk$dispersion=1/size
           }
@@ -240,7 +240,7 @@ ssgwork <-
       fxhat=lamcoefg(newlam,gamvec,ssgmk$family,dps$Kmat,dps$Jmats,
                      ssgmk$xvars[[ssgmk$nxvar+1]],dps$Qmats,ssgmk$nknots,
                      ssgmk$n[2],alpha,ssgmk$yty,nbf,ssgmk$fweights,ssgmk$weights,
-                     inmaxit,intol,insub,ssgmk$dispersion)
+                     inmaxit,intol,insub,ssgmk$dispersion,ssgmk$gcvtype)
       fhat=fxhat[[1]]
       dchat=fhat[1:(nbf+ssgmk$nknots)]
       effdf=fhat[nbf+ssgmk$nknots+2]
@@ -288,7 +288,11 @@ ssgwork <-
     
     ### calculate vaf
     mval=ssgmk$ysm/ssgmk$n[2]
-    vaf=crossprod(((1/(1+exp(-yhat)))-mval)^2,ssgmk$fweights)/(sum(ssgmk$yty)-2*mval*ssgmk$ysm+ssgmk$n[2]*(mval^2))
+    if(ssgmk$family=="binomial"){
+      vaf=1-(sum(ssgmk$yty)-2*sum(ssgmk$xvars[[ssgmk$nxvar+1]]*fitvals/ssgmk$weights)+crossprod(fitvals^2,ssgmk$fweights))/(sum(ssgmk$yty)-ssgmk$n[2]*(mval^2))
+    } else{
+      vaf=1-(sum(ssgmk$yty)-2*sum(ssgmk$xvars[[ssgmk$nxvar+1]]*fitvals)+crossprod(fitvals^2,ssgmk$fweights))/(sum(ssgmk$yty)-ssgmk$n[2]*(mval^2))
+    }
     
     ### retransform predictors
     for(k in 1:ssgmk$nxvar){
@@ -312,7 +316,7 @@ ssgwork <-
                    gammas=gammas,gcvopts=ssgmk$gcvopts,nxvar=xdim,xrng=ssgmk$xrng,
                    flvls=ssgmk$flvls,tpsinfo=ssgmk$tpsinfo,iter=iter,vtol=vtol,
                    coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames,
-                   fweights=ssgmk$fweights,weights=ssgmk$weights)
+                   fweights=ssgmk$fweights,weights=ssgmk$weights,gcvtype=ssgmk$gcvtype)
     ssgfit=list(fitted.values=fitvals,linear.predictors=yhat,se.lp=pse,yvar=yvar,
                 xvars=ssgmk$xvars,type=ssgmk$type,yunique=yunique,xunique=xunique,dispersion=mevar,
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),modelspec=modelspec,

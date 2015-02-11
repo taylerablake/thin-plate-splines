@@ -1,7 +1,7 @@
 gcvssg <-
   function(etas,newlam,family,Kmat,Jmats,yvar,Qmats,
            nknots,ndpts,alpha,yty,nbf,fweights,weights,
-           xnames,Jnames,maxit,intol,subsamp,dispersion) {
+           xnames,Jnames,maxit,intol,subsamp,dispersion,gcvtype) {
     
     gammas=exp(etas);  gamvec=NULL
     for(j in 1:length(Jnames)){
@@ -11,12 +11,12 @@ gcvssg <-
     }
     gammat=kronecker(gamvec,diag(nknots))
     nqmat=matrix(0,nbf+nknots,nbf+nknots)
-    nqmat[(nbf+1):(nknots+nbf),(nbf+1):(nknots+nbf)]=ndpts*newlam*(Qmats%*%gammat)
+    if(family=="binomial" & length(weights)>1){gcvndpts=sum(weights*fweights)} else {gcvndpts=ndpts}
+    nqmat[(nbf+1):(nknots+nbf),(nbf+1):(nknots+nbf)]=gcvndpts*newlam*(Qmats%*%gammat)
     Jmat=Jmats%*%gammat
     rm(Jmats,Qmats)
     nunewr=length(yvar)
     if(nunewr>subsamp){idx=sample.int(nunewr,subsamp)} else {idx=1:nunewr}
-    if(family=="binomial" & length(weights)>1){gcvndpts=sum(weights*fweights)} else {gcvndpts=ndpts}
     
     gcv=tryCatch({
       
@@ -103,37 +103,82 @@ gcvssg <-
         
       }
       
-      # update solution (using direct GCV -- Gu and Xiang, 2001)
+      # update solution (using direct ACV/GACV -- Gu and Xiang, 2001)
       trval=sum(diag(chi%*%xtx))
       if(family=="binomial"){
         cbeta=sum(log(1+exp(yhat))*fweights*weights)
         p1gcv=crossprod(yvar,yhat)-cbeta
-        p2gcv=(trval/(gcvndpts-trval))*sum((weights^2/vwts)*fweights)/gcvndpts
-        p3gcv=crossprod(yvar,1-mu0)
+        if(gcvtype=="acv"){
+          smdiag=rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*(vwts/weights)
+          p2gcv=smdiag/((1-smdiag)*(vwts/weights))
+          p3gcv=yvar*(1-mu0)
+        } else if(gcvtype=="gacv"){
+          p2gcv=sum(rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*weights*fweights)/(gcvndpts-trval)
+          p3gcv=yvar*(1-mu0)
+        } else {
+          p2gcv=(trval/(gcvndpts-trval))*sum((weights^2/vwts)*fweights)/gcvndpts
+          p3gcv=yvar*(1-mu0)
+        }
       } else if(family=="poisson"){
         cbeta=sum(exp(yhat)*fweights)
         p1gcv=crossprod(yvar,yhat)-cbeta
-        p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
-        p3gcv=sum(yty)-crossprod(yvar,mu0)
+        if(gcvtype=="acv"){
+          smdiag=rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*vwts
+          p2gcv=smdiag/((1-smdiag)*vwts)
+          p3gcv=yty-yvar*mu0
+        } else if(gcvtype=="gacv"){
+          p2gcv=sum(rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*fweights)/(ndpts-trval)
+          p3gcv=yty-yvar*mu0
+        } else {
+          p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
+          p3gcv=yty-yvar*mu0
+        }
       } else if(family=="Gamma"){
         cbeta=sum(log(mu0)*fweights)
         p1gcv=crossprod(yvar,-yhat)-cbeta
-        p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
-        p3gcv=sum(yty)-crossprod(yvar,mu0)
+        if(gcvtype=="acv"){
+          smdiag=rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*vwts
+          p2gcv=smdiag/((1-smdiag)*vwts)
+          p3gcv=yty-yvar*mu0
+        } else if(gcvtype=="gacv"){
+          p2gcv=sum(rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*fweights)/(ndpts-trval)
+          p3gcv=yty-yvar*mu0
+        } else {
+          p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
+          p3gcv=yty-yvar*mu0
+        }
       } else if(family=="inverse.gaussian"){
         cbeta=-sum((1/mu0)*fweights)
         p1gcv=crossprod(yvar,-yhat)-cbeta
-        p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
-        p3gcv=sum(yty)-crossprod(yvar,mu0)
+        if(gcvtype=="acv"){
+          smdiag=rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*vwts
+          p2gcv=smdiag/((1-smdiag)*vwts)
+          p3gcv=yty-yvar*mu0
+        } else if(gcvtype=="gacv"){
+          p2gcv=sum(rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*fweights)/(ndpts-trval)
+          p3gcv=yty-yvar*mu0
+        } else {
+          p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
+          p3gcv=yty-yvar*mu0
+        }
       } else if(family=="negbin"){
         cbeta=-sum(fweights*size*log(size/mu0))
         p0=size/(size+mu0)
         p1gcv=sum((yvar+fweights*size)*log(1-p0))-cbeta
-        p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
-        p3gcv=sum((yty+yvar*size)*(p0^2))-sum(yvar*size*p0)
+        if(gcvtype=="acv"){
+          smdiag=rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*vwts
+          p2gcv=smdiag/((1-smdiag)*vwts)
+          p3gcv=(yty+yvar*size)*(p0^2)-yvar*size*p0
+        } else if(gcvtype=="gacv"){
+          p2gcv=sum(rowSums((cbind(Kmat,Jmat)%*%isqrts)^2)*fweights)/(ndpts-trval)
+          p3gcv=(yty+yvar*size)*(p0^2)-yvar*size*p0
+        } else {
+          p2gcv=(trval/(ndpts-trval))*sum((1/vwts)*fweights)/ndpts
+          p3gcv=(yty+yvar*size)*(p0^2)-yvar*size*p0
+        }
       }
       
-      (1/gcvndpts)*(alpha*p2gcv*p3gcv-p1gcv)
+      (1/gcvndpts)*(alpha*sum(p2gcv*p3gcv)-p1gcv)
       
     }, error = function(e) sum(yty))
     

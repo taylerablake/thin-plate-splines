@@ -16,6 +16,7 @@ imagebar <-
     breaks=seq(zlim[1],zlim[2],length.out=(ncolor+1))
     
     # plot image and color bar
+    oldplt=par()$plt;  on.exit(par(plt=oldplt))
     if(drawbar){
       # plot image 
       par(plt=c(.13,.73,.23,.83))

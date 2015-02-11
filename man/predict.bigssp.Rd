@@ -1,27 +1,27 @@
-\name{predict.ssa}
-\alias{predict.ssa}
+\name{predict.bigssp}
+\alias{predict.bigssp}
 \title{
-Predicts for "ssa" Objects
+Predicts for "bigssp" Objects
 }
 \description{
-Get fitted values and standard error estimates for smoothing spline anova models. 
+Get fitted values and standard error estimates for smoothing splines with parametric effects.
 }
 \usage{
-\method{predict}{ssa}(object,newdata=NULL,se.fit=FALSE,include=object$tnames,
-        effect=c("all","0","lin","non"),includeint=FALSE,...)
+\method{predict}{bigssp}(object,newdata=NULL,se.fit=FALSE,include=object$tnames,
+        effect=c("all","0","lin","non"),includeint=FALSE,design=FALSE,...)
 }
 \arguments{
   \item{object}{
-	Object of class "ssa", which is output from \code{\link{bigssa}}.
+	Object of class "bigssp", which is output from \code{\link{bigssp}}.
 }
   \item{newdata}{
-	Data frame or list containing the new data points for prediction. Variable names must match those used in the \code{formula} input of \code{\link{bigssa}}. See Details and Example. Default of \code{newdata=NULL} uses original data in \code{object} input.
+	Data frame or list containing the new data points for prediction. Variable names must match those used in the \code{formula} input of \code{\link{bigssp}}. See Details and Example. Default of \code{newdata=NULL} uses original data in \code{object} input.
 }
   \item{se.fit}{
 	Logical indicating whether the standard errors of the fitted values should be estimated. Default is \code{se.fit=FALSE}.
 }
   \item{include}{
-	Which terms to include in the estimate. You can get fitted values for any combination of terms in the \code{tnames} element of an "ssa" object.
+	Which terms to include in the estimate. You can get fitted values for any combination of terms in the \code{tnames} element of an "bigssp" object.
 }
   \item{effect}{
   Which effect to estimate: \code{effect="all"} gives \eqn{\hat{y}} for given terms in \code{include}, \code{effect="lin"} gives linear portion of \eqn{\hat{y}} for given terms in \code{include}, and \code{effect="non"} gives nonlinear portion of \eqn{\hat{y}} for given terms in \code{include}. Use \code{effect="0"} to return the intercept.
@@ -29,20 +29,21 @@ Get fitted values and standard error estimates for smoothing spline anova models
   \item{includeint}{
   Logical indicating whether the intercept should be included in the prediction. If \code{include=object$tnames} and \code{effect="all"} (default), then this input is ignored and the intercept is automatically included in the prediction.
 }
+  \item{design}{
+  Logical indicating whether the design matrix should be returned.
+}
   \item{\dots}{
 	Ignored.
 }
 }
 \value{
-  For \code{se.fit=FALSE}, returns vector of fitted values.
+  For \code{se.fit=FALSE} and \code{design=FALSE}, returns vector of fitted values.
 
-  For \code{se.fit=TRUE}, returns list with two components:
-	\item{fit}{
-  Vector of fitted values
-}
-\item{se.fit}{
-  Vector of standard errors of fitted values
-}
+  Otherwise returns list with elements:
+  \item{fit}{Vector of fitted values}
+  \item{se.fit}{Vector of standard errors of fitted values (if \code{se.fit=TRUE})}
+  \item{X}{Design matrix used to create fitted values (if \code{design=TRUE})}
+  \item{ix}{Index vector such that \code{fit=X\%*\%object$modelspec$coef[ix]} (if \code{design=TRUE})}
 }
 \references{
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
@@ -59,7 +60,7 @@ Get fitted values and standard error estimates for smoothing spline anova models
 Nathaniel E. Helwig <helwig@umn.edu>
 }
 \details{
-	Uses the coefficient and smoothing parameter estimates from a fit smoothing spline anova (estimated by \code{\link{bigssa}}) to predict for new data.
+	Uses the coefficient and smoothing parameter estimates from a fit smoothing spline with parametric effects (estimated by \code{\link{bigssp}}) to predict for new data.
 }
 
 \examples{
@@ -73,7 +74,7 @@ x<-runif(500)
 y<-myfun(x)+rnorm(500)
 
 # fit cubic spline model
-cubmod<-bigssa(y~x,type="cub",nknots=30)
+cubmod<-bigssp(y~x,type="cub",nknots=30)
 crossprod(predict(cubmod)-myfun(x))/500
 
 # define new data for prediction
@@ -91,7 +92,7 @@ lines(newdata$x,yc$fit-qnorm(.975)*yc$se.fit,lty=3)
 yc0<-predict(cubmod,newdata,se.fit=TRUE,effect="0")
 ycl<-predict(cubmod,newdata,se.fit=TRUE,effect="lin")
 ycn<-predict(cubmod,newdata,se.fit=TRUE,effect="non")
-crossprod(yc$fit-(yc0$fit+ycl$fit+ycn$fit))
+sum(yc$fit-(yc0$fit+ycl$fit+ycn$fit))
 
 # plot results with 95\% Bayesian confidence intervals
 par(mfrow=c(1,2))
@@ -101,44 +102,44 @@ lines(newdata$x,ycl$fit-qnorm(.975)*ycl$se.fit,lty=3)
 plot(newdata$x,ycn$fit,type="l",main="Nonlinear effect")
 lines(newdata$x,ycn$fit+qnorm(.975)*ycn$se.fit,lty=3)
 lines(newdata$x,ycn$fit-qnorm(.975)*ycn$se.fit,lty=3)
-         
-         
+
+
 ##########   EXAMPLE 2   ##########
 
 # define bivariate function and data
 set.seed(773)
 myfun<-function(x){2+x[,1]/10-x[,2]/5+2*sin(sqrt(x[,1]^2+x[,2]^2+.1))/sqrt(x[,1]^2+x[,2]^2+.1)}
-x1v<-runif(500)*16-8;   x2v<-runif(500)*16-8
-y<-myfun(cbind(x1v,x2v))+rnorm(500)
+x<-cbind(runif(500),runif(500))*16-8
+y<-myfun(x)+rnorm(500)
 
-# tensor product cubic splines with 50 knots
-cubmod<-bigssa(y~x1v*x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
-crossprod(predict(cubmod)-myfun(cbind(x1v,x2v)))/500
+# bidimensional thin-plate spline with 50 knots
+tpsmod<-bigssp(y~x,type="tps",nknots=50)
+crossprod(predict(tpsmod)-myfun(x))/500
 
 # define new data for prediction
 xnew<-as.matrix(expand.grid(seq(-8,8,l=50),seq(-8,8,l=50)))
-newdata<-list(x1v=xnew[,1],x2v=xnew[,2])
+newdata<-list(x=xnew)
 
 # get fitted values for new data
-yp<-predict(cubmod,newdata)
+yp<-predict(tpsmod,newdata)
 
 # plot results
 imagebar(seq(-8,8,l=50),seq(-8,8,l=50),matrix(yp,50,50),
          xlab=expression(italic(x)[1]),ylab=expression(italic(x)[2]),
          zlab=expression(hat(italic(y))))
 
-# predict linear and nonlinear effects for x1v
-newdata<-list(x1v=seq(-8,8,length.out=100))
-yl<-predict(cubmod,newdata,include="x1v",effect="lin",se.fit=TRUE)
-yn<-predict(cubmod,newdata,include="x1v",effect="non",se.fit=TRUE)
+# predict linear and nonlinear effects
+yl<-predict(tpsmod,newdata,effect="lin")
+yn<-predict(tpsmod,newdata,effect="non")
 
-# plot results with 95\% Bayesian confidence intervals
+# plot results
 par(mfrow=c(1,2))
-plot(newdata$x1v,yl$fit,type="l",main="Linear effect")
-lines(newdata$x1v,yl$fit+qnorm(.975)*yl$se.fit,lty=3)
-lines(newdata$x1v,yl$fit-qnorm(.975)*yl$se.fit,lty=3)
-plot(newdata$x1v,yn$fit,type="l",main="Nonlinear effect",ylim=c(-.3,.4))
-lines(newdata$x1v,yn$fit+qnorm(.975)*yn$se.fit,lty=3)
-lines(newdata$x1v,yn$fit-qnorm(.975)*yn$se.fit,lty=3)
+imagebar(seq(-8,8,l=50),seq(-8,8,l=50),matrix(yl,50,50),
+         main="Linear effect",xlab=expression(italic(x)[1]),
+         ylab=expression(italic(x)[2]),zlab=expression(hat(italic(y))))
+imagebar(seq(-8,8,l=50),seq(-8,8,l=50),matrix(yn,50,50),
+         main="Nonlinear effect",xlab=expression(italic(x)[1]),
+         ylab=expression(italic(x)[2]),zlab=expression(hat(italic(y))))
+         
 
 }

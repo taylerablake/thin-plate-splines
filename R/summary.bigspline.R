@@ -1,4 +1,4 @@
-summary.css <- 
+summary.bigspline <- 
   function(object,fitresid=TRUE,chunksize=10000,...){
     
     ndpts=as.integer(object$ndf[1])
@@ -29,7 +29,7 @@ summary.css <-
     sumspline=list(call=NA,type=object$type,fitted.values=yhat,residuals=resid,
                    sigma=object$sigma,n=ndpts,df=object$ndf[2],info=object$info,
                    converged=NA,iter=NA,rparm=object$rparm,lambda=object$lambda)
-    class(sumspline)<-"summary.css"
+    class(sumspline)<-"summary.bigspline"
     return(sumspline)
     
   }

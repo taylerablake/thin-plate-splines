@@ -1,3 +1,34 @@
+Changes from ver 1.0-4 to ver 1.0-5     [Feb-11-2015]
+   1) bigsplines-package
+	*   Minor changes to bigspline, bigtps, and imagebar.
+	*   Major changes to bigssa/makessa and bigssp/makessp (added random effects).
+	*   Major changes/improvements to bigssg function.
+	*   Updated some references throughout.
+   2) bigspline (and corresponding predict, print, and summary functions)
+	*   Changed class of output object (from class “css” to class “bigspline”)
+   3) bigssa (and corresponding predict, print, and summary functions)
+	*   For unidimensional predictor, assumes type=“cub” as default.
+	*   Changed class of output object (from class “ssa” to class “bigssa”)
+	*   Added support for simple random effects/intercepts.
+   4) bigssp (and corresponding predict, print, and summary functions)
+	*   For unidimensional predictor, assumes type=“cub” as default.
+	*   Changed class of output object (from class “ssp” to class “bigssp”)
+	*   Added support for simple random effects/intercepts.
+   5) bigtps (and corresponding predict, print, and summary functions)
+	*   Changed class of output object (from class “tps” to class “bigtps”)
+   6) imagebar
+	*   Restores original par on exit (so subsequent plots appear correctly).
+   7) bigssg (and corresponding predict, print, and summary functions)
+	*   For unidimensional predictor, assumes type=“cub” as default.
+	*   Changed class of output objects (from class “ssg” to class “bigssg”)
+	*   More options for smoothing parameter selection (see input gcvtype).
+	*   Changed default smoothing parameter selection method to "acv".
+	*   Bug fix when using skip.iter=FALSE (early termination of iterative update).
+	*   Bug fix for family="negbin" with unknown dispersion (multi-way SSA only).
+	*   R-squared is now reasonably defined: R^2 = 1-SSE/SST.
+	*   Stability and usability improvements throughout.
+
+
 Changes from ver 1.0-3 to ver 1.0-4     [Oct-03-2014]
    1) bigsplines-package
 	*   Minor updates for prediction functions.
@@ -11,6 +42,7 @@ Changes from ver 1.0-3 to ver 1.0-4     [Oct-03-2014]
    4) predict.ssp
 	*   Added option for including intercept.
 	*   Stability and usability improvements.
+
 
 Changes from ver 1.0-2 to ver 1.0-3     [Aug-26-2014]
    1) bigsplines-package

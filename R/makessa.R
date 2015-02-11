@@ -1,10 +1,11 @@
 makessa <-
-  function(formula,data,type=NULL,nknots=NULL,rparm=NA,
+  function(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
            lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
-           gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL){
+           gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
+           random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL){
     ###### Makes Smoothing Spline Anova models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: August 26, 2014
+    ###### Last modified: January 5, 2015
     
     ### get initial info 
     mf=match.call()
@@ -28,6 +29,41 @@ makessa <-
     if(ncol(yvar)>1){stop("Response must be unidimensional (vector).")}
     if(nrow(yvar)!=ndpts){stop("Response vector must have same length as predictors.")}
     ysm=sum(yvar);  nunewr=ndpts;  fweights=rep.int(1L,ndpts);  yty=crossprod(yvar)
+    
+    ### check random
+    ZtZy=lev1var=lev2var=NULL
+    if(is.null(random)==FALSE){
+      if(class(random)!="formula"){stop("Input 'random' must be a formula.")}
+      remlalg=remlalg[1]
+      if(any(remlalg==c("FS","EM","none"))==FALSE){stop("Input 'remlalg' must be 'FS', 'EM', or 'none'.")}
+      rchar=as.character(random)
+      if(length(rchar)!=2L | rchar[[1]]!="~"){stop("Incorrect input for 'random' (see Details).")}
+      rs=strsplit(rchar[[2]]," \\| ")[[1]]
+      if(length(rs)==1L){stop("Missing '|' in random formula.")}
+      if(length(rs)>2L){stop("Can only enter one '|' in random formula.")}
+      lev2var=eval(parse(text=rs[2]),data,parent.frame())
+      if(!is.factor(lev2var)){stop(paste("Group 2 variable",rs[2],"must be a factor."))}
+      if(rs[1]!="1"){
+        rs=rev(rs)
+        lev1var=lev2var
+        lev2var=eval(parse(text=rs[2]),data,parent.frame())
+        if(!is.factor(lev2var)){stop(paste("Group 1 variable",rs[2],"must be a factor."))}
+        if(nlevels(lev1var)<nlevels(lev2var)){stop(paste("Group 2 variable",rs[1],"must be nested within Group 1 variable",rs[2],"."))}
+        ntau=nlevels(lev2var)
+      } else {lev1var=rs[1]; ntau=1}
+      if(!is.null(remlopts)){
+        if(!is.list(remlopts)){stop("Input 'remlopts' must be a list.")}
+        rmatch=match(c("maxit","rtol","itau"),names(remlopts))
+        if(any(is.na(rmatch))){stop("Invalid input for 'remlopts' (list must contain 'maxit', 'rtol', and 'itau'.")}
+        remlopts$maxit=as.integer(remlopts$maxit[1]); if(remlopts$maxit<1){stop("Input 'remlopts$maxit' must be a positive integer.")}
+        remlopts$rtol=remlopts$rtol[1]; if(remlopts$rtol<=0){stop("Input 'remlopts$rtol' must be a postive scalar.")}
+        if(length(remlopts$itau)!=ntau | any(remlopts$itau<=0)){stop("Input 'remlopts$itau' must contain positive initial tau values (one for each variance component).")}
+      } else{
+        if(remlalg=="none"){stop("You must provide initial tau parameters (via remlopts) when using remlalg='none' option.")}
+        remlopts=list(maxit=500,rtol=10^-3,itau=rep(1,ntau))
+      }
+      ZtZy=makeZtZ(rs,lev1var,lev2var,yvar)
+    }
     
     ### check gcvopts
     if(is.null(gcvopts[1])==FALSE){
@@ -74,7 +110,7 @@ makessa <-
         if(any(gammas<=0)){stop('Input "gammas" must be nonnegative smoothing parameters.')}
       }
     } else{
-      type=type[[1]]
+      type=type[[1]];  if(is.null(type)){type="cub"}
       rparm=rparm[[1]]
     }
     
@@ -218,11 +254,13 @@ makessa <-
     ### collect output
     ylist=list(yvar)
     names(ylist)=xynames[1]
+    uidx=NULL; if(!is.null(random)){if(is.na(rparm[1])){uidx=1:ndpts} else{uidx=as.integer(gvec)}}
     ssamk=list(et=et,n=c(nunewr,ndpts),xvars=c(xvars,ylist),nxvar=nxvar,yty=yty,
                fweights=fweights,type=type,xdim=xdim,theknots=theknots,nknots=nknots,
                lambdas=lambdas,rks=rks[1:4],gcvopts=gcvopts,xorig=xorig,yorig=yorig,
                se.fit=se.fit,skip.iter=skip.iter,ysm=ysm,rparm=rparm,xrng=xrng,
-               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,gammas=gammas,weights=weights)
+               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,gammas=gammas,weights=weights,
+               uidx=uidx,ZtZy=ZtZy,random=random,remlalg=remlalg,remlopts=remlopts,lev1var=lev1var,lev2var=lev2var)
     class(ssamk)<-"makessa"
     return(ssamk)
     

@@ -1,10 +1,11 @@
 makessg <-
   function(formula,family,data,type=NULL,nknots=NULL,rparm=NA,
            lambdas=NULL,skip.iter=TRUE,se.lp=FALSE,rseed=1234,
-           gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL){
+           gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
+           gcvtype=c("acv","gacv","gacv.old")){
     ###### Makes Generalized Smoothing Spline Anova models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: August 26, 2014
+    ###### Last modified: October 30, 2014
     
     ### get initial info 
     mf=match.call()
@@ -22,6 +23,10 @@ makessg <-
     xnames=xynames[2:(nxvar+1L)]
     tnames=colnames(et)
     if(any(colSums(et>0L)>3L)){stop("Four-way (and higher-order) interactions are not supported.")}
+    
+    ### check gcvtype
+    gcvtype=gcvtype[1]
+    if(any(gcvtype==c("acv","gacv","gacv.old"))==FALSE){stop("Input 'gcvtype' must be one of three specific options.")}
     
     ### check response
     yvar=as.matrix(model.response(mf, "numeric")+0.0)   # response variable
@@ -118,7 +123,7 @@ makessg <-
         if(any(gammas<=0)){stop('Input "gammas" must be nonnegative smoothing parameters.')}
       }
     } else{
-      type=type[[1]]
+      type=type[[1]];  if(is.null(type)){type="cub"}
       rparm=rparm[[1]]
     }
     
@@ -269,7 +274,7 @@ makessg <-
                xorig=xorig,yorig=yorig,se.lp=se.lp,skip.iter=skip.iter,
                ysm=ysm,rparm=rparm,xrng=xrng,flvls=flvls,tpsinfo=rks$tpsinfo,
                formula=formula,gammas=gammas,weights=weights,worig=worig,family=family,
-               slogy=slogy,dispersion=dispersion)
+               slogy=slogy,dispersion=dispersion,gcvtype=gcvtype)
     class(ssgmk)<-"makessg"
     return(ssgmk)
     

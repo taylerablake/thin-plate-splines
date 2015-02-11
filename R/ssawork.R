@@ -76,6 +76,67 @@ ssawork <-
     Kty=crossprod(dps$Kmat*ssamk$weights,ssamk$xvars[[ssamk$nxvar+1]])
     Jty=crossprod(dps$Jmats*ssamk$weights,ssamk$xvars[[ssamk$nxvar+1]])
     
+    ### reml estimation of variance components
+    if(!is.null(ssamk$random)){
+      
+      # some initializations
+      XtZ=t(makeZtX(ssamk$lev1var,ssamk$lev2var,dps$Kmat,dps$Jmats,ssamk$uidx,names(ssamk$ZtZy[[1]])))
+      nbf=length(Kty); cbf=length(Jty)
+      
+      # iterative estimation (if remlalg!="none")
+      if(ssamk$remlalg!="none"){
+        if(jdim[2]>ssamk$nknots){
+          gammat=kronecker(rep(1,jdim[2]/ssamk$nknots),diag(ssamk$nknots));   ktj=KtJ%*%gammat     
+          if(length(ssamk$lev1var)==1L){
+            varhat=remlri(ssamk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
+                          ssamk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),ssamk$n[2]-ssamk$nknots,
+                          tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+          } else {
+            varhat=remlvc(ssamk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
+                          ssamk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),ssamk$n[2]-ssamk$nknots,rdm=ssamk$ZtZy[[3]],
+                          tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+          }
+          rm(ktj)
+        } else {
+          if(length(ssamk$lev1var)==1L){
+            varhat=remlri(ssamk$yty,rbind(Kty,Jty),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
+                          ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+          } else{
+            varhat=remlvc(ssamk$yty,rbind(Kty,Jty),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
+                          ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,rdm=ssamk$ZtZy[[3]],tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+          }
+        }
+        tau=varhat$tau;  remlinfo=varhat[3:4]
+        if(varhat$cnvg==FALSE){warning("REML estimation algorithm failed to converge. \nTry a different algorithm (remlalg) or change REML estimation options (remlopts).")}
+      } else {tau=ssamk$remlopts$itau;  remlinfo=NULL}
+      nvc=ssamk$ZtZy[[3]]
+      if(length(ssamk$lev1var)>1L){names(tau)=levels(ssamk$lev2var)}
+      
+      # check for negative variance components
+      if(any(tau<=0)){
+        tau[tau<=0]=10^-4
+        warning("REML estimation produced variance component estimates <= 0. \nOffending variance components are set to 10^-4 for estimation.")
+      }
+      
+      # redefine crossproducts
+      csqrt=(ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))^(-0.5)
+      XtZc=XtZ*rep(csqrt,each=(nbf+cbf))
+      if(nbf>1L){
+        KtK = (KtK-tcrossprod(XtZc[1:nbf,]))
+        KtJ = (KtJ-tcrossprod(XtZc[1:nbf,],XtZc[(nbf+1):(nbf+cbf),]))
+        Kty = (Kty-(XtZc[1:nbf,])%*%(ssamk$ZtZy[[1]]*csqrt))
+      } else {
+        nxtz=ncol(XtZc)
+        KtK = (KtK-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz)))
+        KtJ = (KtJ-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz),XtZc[(nbf+1):(nbf+cbf),]))
+        Kty = (Kty-matrix(XtZc[1:nbf,],nbf,nxtz)%*%(ssamk$ZtZy[[1]]*csqrt))
+      }
+      JtJ = (JtJ-tcrossprod(XtZc[(nbf+1):(nbf+cbf),]))
+      Jty = (Jty-(XtZc[(nbf+1):(nbf+cbf),])%*%(ssamk$ZtZy[[1]]*csqrt))
+      ssamk$yty = (ssamk$yty-crossprod(ssamk$ZtZy[[1]]*csqrt))
+      
+    } else {tau=remlinfo=NULL}
+    
     ### initialize smoothing parameters
     nbf=length(Kty)
     if(ssamk$nxvar>1L){
@@ -203,6 +264,7 @@ ssawork <-
     
     ### calculate vaf
     mval=ssamk$ysm/ssamk$n[2]
+    if(!is.null(ssamk$random)){mval=sum(sqrt(1-(ssamk$ZtZy[[2]]/(ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))))*ssamk$ZtZy[[1]])/ssamk$n[2]}
     vaf=1-sseval/(ssamk$yty-ssamk$n[2]*(mval^2))
     
     ### retransform predictors
@@ -219,6 +281,21 @@ ssawork <-
       xunique=ssamk$xvars[1:ssamk$nxvar];  ssamk$xvars=ssamk$xorig
     } else{xunique=yunique=NA;  yvar=ssamk$xvars[[ssamk$nxvar+1]]; ssamk$xvars=ssamk$xvars[1:ssamk$nxvar]}
     
+    ### check for random (get blup)
+    if(!is.null(ssamk$random)){
+      if(jdim[2]>ssamk$nknots){
+        gamvec=NULL
+        for(j in 1:length(Jnames)){
+          xi=strsplit(Jnames[j],":")
+          xidx=match(xi[[1]],xnames)
+          gamvec=c(gamvec,prod(gammas[xidx]))
+        }
+        gammat=kronecker(gamvec,diag(ssamk$nknots))
+        XtZ=rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),]))
+      }
+      bhat=ssblup(ssamk$ZtZy[[1]],t(XtZ),ssamk$ZtZy[[2]],dchat,ssamk$ZtZy[[3]],tau)
+    } else {bhat=NULL}
+    
     ### collect results
     names(gammas)=xnames
     if(ssamk$skip.iter==FALSE && vtol<=gcvtol){cvg=TRUE}
@@ -227,11 +304,12 @@ ssawork <-
                    gammas=gammas,gcvopts=ssamk$gcvopts,nxvar=xdim,xrng=ssamk$xrng,
                    flvls=ssamk$flvls,tpsinfo=ssamk$tpsinfo,iter=iter,vtol=vtol,
                    coef=dchat,coef.csqrt=csqrt,Etab=Etab,Knames=Knames,
-                   fweights=ssamk$fweights,weights=ssamk$weights)
+                   fweights=ssamk$fweights,weights=ssamk$weights,remlalg=ssamk$remlalg,
+                   remlopts=ssamk$remlopts,remlinfo=remlinfo)
     ssafit=list(fitted.values=yhat,se.fit=pse,yvar=yvar,xvars=ssamk$xvars,
                 type=ssamk$type,yunique=yunique,xunique=xunique,sigma=sqrt(mevar),
                 ndf=ndf,info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),modelspec=modelspec,
-                converged=cvg,tnames=tnames)
+                converged=cvg,tnames=tnames,random=ssamk$random,tau=tau,blup=bhat)
     return(ssafit)
     
   }

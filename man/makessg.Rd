@@ -9,7 +9,8 @@ This function creates a list containing the necessary information to fit a gener
 \usage{
 makessg(formula,family,data,type=NULL,nknots=NULL,rparm=NA,
         lambdas=NULL,skip.iter=TRUE,se.lp=FALSE,rseed=1234,
-        gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL)
+        gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
+        gcvtype=c("acv","gacv","gacv.old"))
 }
 \arguments{
   \item{formula}{
@@ -53,6 +54,9 @@ List of initial smoothing parameters for each predictor. See Details.
 }
   \item{weights}{
 Vector of positive weights for fitting (default is vector of ones).  
+}
+  \item{gcvtype}{
+Cross-validation criterion for selecting smoothing parameters (see Details).
 }
 }
 \details{

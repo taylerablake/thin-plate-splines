@@ -9,7 +9,8 @@ Given an exponential family response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}
 \usage{
 bigssg(formula,family,data=NULL,type=NULL,nknots=NULL,rparm=NA,
        lambdas=NULL,skip.iter=TRUE,se.lp=FALSE,rseed=1234,
-       gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL)
+       gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
+       gcvtype=c("acv","gacv","gacv.old"))
 }
 \arguments{
   \item{formula}{
@@ -54,6 +55,9 @@ List of initial smoothing parameters for each predictor. See Details.
   \item{weights}{
 Vector of positive weights for fitting (default is vector of ones).  
 }
+  \item{gcvtype}{
+Cross-validation criterion for selecting smoothing parameters (see Details).
+}
 }
 \details{
  The \code{formula} syntax is similar to that used in \code{\link{lm}} and many other R regression functions. Use \code{y~x} to predict the response \code{y} from the predictor \code{x}. Use \code{y~x1+x2} to fit an additive model of the predictors \code{x1} and \code{x2}, and use \code{y~x1*x2} to fit an interaction model. The syntax \code{y~x1*x2} includes the interaction and main effects, whereas the syntax \code{y~x1:x2} is not supported. See Computational Details for specifics about how nonparametric effects are estimated.
@@ -81,6 +85,8 @@ Vector of positive weights for fitting (default is vector of ones).
   \item{call}{Called model in input \code{formula}.}
 }
 \references{
+  Gu, C. (2013). \emph{Smoothing spline ANOVA models, 2nd edition}. New York: Springer.
+
   Gu, C. and Xiang, D. (2001). Cross-validating non-Gaussian data: Generalized approximate cross-validation revisited. \emph{Journal of Computational and Graphical Statistics, 10}, 581-591.
   
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
@@ -104,7 +110,7 @@ Nathaniel E. Helwig <helwig@umn.edu>
 \section{Warnings }{
 	Cubic and cubic periodic splines transform the predictor to the interval [0,1] before fitting.
   
-  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.ssg}} function to get fitted values for full \code{yvar} vector.
+  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.bigssg}} function to get fitted values for full \code{yvar} vector.
 }
 
 \section{Response}{
@@ -135,9 +141,15 @@ Only one link is permitted for each family:
   
   Following standard exponential family theory, \eqn{\mu_{i} = \dot{b}(\eta(\mathbf{x}_{i}))} and \eqn{v_{i} = \ddot{b}(\eta(\mathbf{x}_{i}))a(\xi)}, where \eqn{\dot{b}(\cdot)} and \eqn{\ddot{b}(\cdot)} denote the first and second derivatives of \eqn{b(\cdot)}, \eqn{v_{i}} is the variance of \eqn{y_{i}},and \eqn{\xi} is the dispersion parameter. Given fixed smoothing parameters, the optimal \eqn{\eta} can be estimated by iteratively minimizing the penalized reweighted least-squares functional \deqn{\frac{1}{n}\sum_{i=1}^{n}v_{i}^{*}\left(y_{i}^{*} - \eta(\mathbf{x}_{i}) \right)^{2} + \lambda J(\eta)} where \eqn{v_{i}^{*}=v_{i}/a(\xi)} is the weight, \eqn{y_{i}^{*}=\hat{\eta}(\mathbf{x}_{i})+(y_{i}-\hat{\mu}_{i})/v_{i}^{*}} is the adjusted dependent variable, and \eqn{\hat{\eta}(\mathbf{x}_{i})} is the current estimate of \eqn{\eta}.
   
-  The optimal smoothing parameters are chosen by minimizing (an approximation of) the alternative Generalized Approximate Cross-Validation (GACV) score of Gu and Xiang (2001): \deqn{-\frac{1}{n}\sum_{i=1}^{n}\{y_{i}\hat{\eta}(\mathbf{x}_{i}) - b(\hat{\eta}(\mathbf{x}_{i}))\} + \frac{\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda}\mathbf{V}^{-1})}{n-\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda})}\frac{1}{n}\sum_{i=1}^{n}y_{i}(y_{i}-\hat{\mu}_{i}) } where \eqn{\mathbf{S}_{\boldsymbol\lambda}} is the smoothing matrix, and \eqn{\mathbf{V}=\mathrm{diag}(v_{1}^{*},\ldots,v_{n}^{*})}. We approximate \eqn{\frac{1}{n}\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda}\mathbf{V}^{-1})} using \eqn{\frac{1}{n^2}\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda})\mathrm{tr}(\mathbf{V}^{-1})} for faster computation.
+  The optimal smoothing parameters are chosen via direct cross-validation (see Gu & Xiang, 2001). 
+  
+  Setting \code{gcvtype="acv"} uses the Approximate Cross-Validation (ACV) score: \deqn{-\frac{1}{n}\sum_{i=1}^{n}\{y_{i}\hat{\eta}(\mathbf{x}_{i}) - b(\hat{\eta}(\mathbf{x}_{i}))\} + \frac{1}{n}\sum_{i=1}^{n}\frac{s_{ii}}{(1-s_{ii})v_{i}^{*}}y_{i}(y_{i}-\hat{\mu}_{i}) } where \eqn{s_{ii}} is the i-th diagonal of the smoothing matrix \eqn{\mathbf{S}_{\boldsymbol\lambda}}.
+  
+  Setting \code{gcvtype="gacv"} uses the Generalized ACV (GACV) score: \deqn{-\frac{1}{n}\sum_{i=1}^{n}\{y_{i}\hat{\eta}(\mathbf{x}_{i}) - b(\hat{\eta}(\mathbf{x}_{i}))\} + \frac{\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda}\mathbf{V}^{-1})}{n-\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda})}\frac{1}{n}\sum_{i=1}^{n}y_{i}(y_{i}-\hat{\mu}_{i}) } where \eqn{\mathbf{S}_{\boldsymbol\lambda}} is the smoothing matrix, and \eqn{\mathbf{V}=\mathrm{diag}(v_{1}^{*},\ldots,v_{n}^{*})}. 
+  
+  Setting \code{gcvtype="gacv.old"} uses an approximation of the GACV where \eqn{\frac{1}{n}\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda}\mathbf{V}^{-1})} is approximated using \eqn{\frac{1}{n^2}\mathrm{tr}(\mathbf{S}_{\boldsymbol\lambda})\mathrm{tr}(\mathbf{V}^{-1})}. This option is included for back-compatibility (ver 1.0-4 and earlier), and is not recommended because the ACV or GACV often perform better.
 
-Note that this function uses the efficient SSA reparameterization described in Helwig (2013) and Helwig and Ma (in press); using is parameterization, there is one unique smoothing parameter per predictor (\eqn{\gamma_{j}}), and these \eqn{\gamma_{j}} parameters determine the structure of the \eqn{\theta_{k}} parameters in the tensor product space. To evaluate the GACV score, this function uses the improved (scalable) GSSA algorithm discussed in Helwig (in preparation).
+Note that this function uses the efficient SSA reparameterization described in Helwig (2013) and Helwig and Ma (in press); using is parameterization, there is one unique smoothing parameter per predictor (\eqn{\gamma_{j}}), and these \eqn{\gamma_{j}} parameters determine the structure of the \eqn{\theta_{k}} parameters in the tensor product space. To evaluate the ACV/GACV score, this function uses the improved (scalable) GSSA algorithm discussed in Helwig (in preparation).
 }
 
 \section{Skip Iteration }{

@@ -1,4 +1,4 @@
-summary.ssg <- 
+summary.bigssg <- 
   function(object,fitresid=TRUE,chunksize=10000,...){
     
     ndpts=as.integer(object$ndf[1])
@@ -67,11 +67,12 @@ summary.ssg <-
       }
     } else{yhat=list(NULL); devresid=NULL; deviance=NULL}
     sumssg=list(call=object$call,type=object$type,fitted.values=yhat$fitted.values,
-                linear.predictors=yhat$linear.predictors,residuals=devresid,deviance=deviance,
-                dispersion=object$dispersion,n=object$ndf[1],df=object$ndf[2],info=object$info,
-                converged=object$converged,iter=object$modelspec$iter,rparm=object$modelspec$rparm,
-                lambda=object$modelspec$lambda,gammas=object$modelspec$gammas,family=object$family)
-    class(sumssg)<-"summary.ssg"
+                linear.predictors=yhat$linear.predictors,residuals=devresid,
+                deviance=deviance,dispersion=object$dispersion,n=object$ndf[1],
+                df=object$ndf[2],info=object$info,converged=object$converged,iter=object$modelspec$iter,
+                rparm=object$modelspec$rparm,lambda=object$modelspec$lambda,gammas=object$modelspec$gammas,
+                family=object$family,gcvtype=object$modelspec$gcvtype)
+    class(sumssg)<-"summary.bigssg"
     return(sumssg)
     
   }

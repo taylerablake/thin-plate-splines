@@ -1,7 +1,7 @@
 smartssg <-
-  function(Etab,lambdas,family,Kmat,Jmats,Jnames,
-           yvar,Qmats,nknots,ndpts,alpha,yty,nbf,
-           fweights,fitweights,maxit,intol,subsamp,dispersion){
+  function(Etab,lambdas,family,Kmat,Jmats,Jnames,yvar,
+           Qmats,nknots,ndpts,alpha,yty,nbf,fweights,fitweights,
+           maxit,intol,subsamp,dispersion,gcvtype){
     
     ### get info
     rsums=rowSums(Etab)[2:nrow(Etab)]
@@ -73,8 +73,8 @@ smartssg <-
         }
         gammas=1/sdq
         chat=(lamcoefg(lambdas,gammas,family,Kmat,Jmats,yvar,
-                       Qmats,nknots,ndpts,alpha,yty,nbf,
-                       fweights,fitweights,maxit,intol,subsamp,dispersion))[[1]][(nbf+1):(nknots+nbf)]
+                       Qmats,nknots,ndpts,alpha,yty,nbf,fweights,
+                       fitweights,maxit,intol,subsamp,dispersion,gcvtype))[[1]][(nbf+1):(nknots+nbf)]
         for(jj in 1:nfs){
           jind=((jj-1)*nknots+1):(jj*nknots)
           gammas[jj]=(gammas[jj]^2)*crossprod(pdsXty(Qmats[,jind],chat))
@@ -104,8 +104,8 @@ smartssg <-
       gamvec=c(gamvec,prod(gammas[xidx]))
     }    
     chat=(lamcoefg(lambdas,gamvec,family,Kmat,Jmats,yvar,
-                   Qmats,nknots,ndpts,alpha,yty,nbf,
-                   fweights,fitweights,maxit,intol,subsamp,dispersion))[[1]][(nbf+1):(nknots+nbf)]
+                   Qmats,nknots,ndpts,alpha,yty,nbf,fweights,
+                   fitweights,maxit,intol,subsamp,dispersion,gcvtype))[[1]][(nbf+1):(nknots+nbf)]
     
     ### define vectors to collect new info
     gammasnew=rep(0,nxvar)

@@ -1,4 +1,4 @@
-print.ssg <- 
+print.bigssg <- 
   function(x,...){
     
     xnames=names(x$xvars)

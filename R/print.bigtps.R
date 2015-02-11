@@ -1,4 +1,4 @@
-print.tps <- 
+print.bigtps <- 
   function(x,...){
     
     cat("\nSpline Type:\n")

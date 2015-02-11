@@ -1,4 +1,4 @@
-summary.tps <- 
+summary.bigtps <- 
   function(object,fitresid=TRUE,chunksize=10000,...){
     
     ndpts=as.integer(object$ndf[1])
@@ -29,7 +29,7 @@ summary.tps <-
     sumtps=list(call=NA,type="tps",fitted.values=yhat,residuals=resid,
                 sigma=object$sigma,n=ndpts,df=object$ndf[2],info=object$info,
                 converged=NA,iter=NA,rparm=object$rparm,lambda=object$lambda)
-    class(sumtps)<-"summary.tps"
+    class(sumtps)<-"summary.bigtps"
     return(sumtps)
     
   }

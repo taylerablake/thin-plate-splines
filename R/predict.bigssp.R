@@ -1,9 +1,9 @@
-predict.ssa <-
+predict.bigssp <-
   function(object,newdata=NULL,se.fit=FALSE,include=object$tnames,
-           effect=c("all","0","lin","non"),includeint=FALSE,...) {
-    ###### Predicts for class "ssa" objects
+           effect=c("all","0","lin","non"),includeint=FALSE,design=FALSE,...) {
+    ###### Predicts for class "bigssp" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: October 2, 2014
+    ###### Last modified: January 6, 2015
     
     ### check newdata
     effect=effect[1]
@@ -12,9 +12,9 @@ predict.ssa <-
       yhat=object$modelspec$coef[1]
       if(se.fit){
         pse=sqrt(sum(object$modelspec$coef.csqrt[1,]^2))
-        predssa=list(fit=as.numeric(yhat),se.fit=pse)
-      } else {predssa=as.numeric(yhat)}
-      return(predssa)
+        predssp=list(fit=as.numeric(yhat),se.fit=pse)
+      } else {predssp=as.numeric(yhat)}
+      return(predssp)
     }
     xnames=names(object$xvars)
     nxvar=length(object$xvars)
@@ -62,7 +62,7 @@ predict.ssa <-
         if(any(is.na(newdata[[k]]))){
           stop(paste("No data in 'newdata' for",xnames[k],"term in 'include' input."))
         }
-        if(any(object$type[[k]]==c("cub","cub0","per","tps"))){
+        if(any(object$type[[k]]==c("cub","cub0","per","tps","prm"))){
           newdata[[k]]=as.matrix(newdata[[k]]+0.0)
         } else {
           fidx=match(newdata[[k]],object$modelspec$flvls[[k]])
@@ -71,7 +71,7 @@ predict.ssa <-
         }
         if(any(object$type[[k]]==c("cub","cub0","per"))){
           newdata[[k]]=(newdata[[k]]-object$modelspec$xrng[[k]][1])/(object$modelspec$xrng[[k]][2]-object$modelspec$xrng[[k]][1])
-        }
+        } 
         newdim[k]=nrow(newdata[[k]])
         if(k>1L && newdim[k]!=max(newdim,na.rm=TRUE)){stop("Must have same number of observations for each covariate in newdata.")}
       } else newdata[[k]]=NA # end if(sum(Etab[k+1L,])>0)
@@ -83,49 +83,53 @@ predict.ssa <-
     
     ### make design and penalty matrices
     if(lnt==length(oldnames) && effect=="all"){intid=TRUE} else {intid=includeint}
-    dps=ssadpm(newdata,object$type,rks[1:3],object$modelspec$myknots,
+    dps=sspdpm(newdata,object$type,rks[1:3],object$modelspec$myknots,
                Etab,pred=TRUE,effect,intid)
     Knames=colnames(dps$Kmat)
     nknots=nrow(object$modelspec$myknots[[1]])
-    if(is.null(dps$Jmats)==FALSE){
-      jdim=dim(dps$Jmats)
-      Jnames=colnames(dps$Jmat)[seq(1,jdim[2],by=nknots)]
-      Jlen=length(Jnames)
-    } else{Jlen=NULL}
     
     ### get appropriate coefficients
-    pse=NA;  gnames=names(object$modelspec$gammas)
+    kidx=jidx=Jmat=NULL
+    pse=NA;  gnames=names(object$modelspec$thetas)
     nbf=length(object$modelspec$coef)-nknots
     if(is.null(Knames)){
       if(is.null(dps$Jmats)){stop("No non/linear effect for terms in 'include' input.")}
-      gamvec=NULL
-      for(j in 1:Jlen){
-        xi=strsplit(Jnames[j],":"); xidx=match(xi[[1]],gnames)
-        gamvec=c(gamvec,prod(object$modelspec$gammas[xidx]))
+      thvec=NULL
+      for(j in 1:lnt){
+        widx=which(gnames==newnames[j])
+        thvec=c(thvec,object$modelspec$thetas[widx])
       }
-      yhat=(dps$Jmats%*%kronecker(gamvec,diag(nknots)))%*%object$modelspec$coef[(nbf+1):(nbf+nknots)]
-      if(se.fit){pse=sqrt(postvar(NULL,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[(nbf+1):(nbf+nknots),]))}
+      jidx=(nbf+1):(nbf+nknots)
+      Jmat=dps$Jmats%*%kronecker(thvec,diag(nknots))
+      yhat=Jmat%*%object$modelspec$coef[jidx]
+      if(se.fit){pse=sqrt(postvar(NULL,Jmat,object$modelspec$coef.csqrt[jidx,]))}
     } else if(is.null(dps$Jmats)){
-      kidx=NULL
       for(k in 1:nbf){kidx=c(kidx,which(object$modelspec$Knames==Knames[k]))}
       kidx=unique(kidx)
       yhat=dps$Kmat%*%object$modelspec$coef[kidx]
       if(se.fit){pse=sqrt(postvar(dps$Kmat,NULL,object$modelspec$coef.csqrt[kidx,]))}
     } else {
-      kidx=NULL
       for(k in 1:nbf){kidx=c(kidx,which(object$modelspec$Knames==Knames[k]))}
       kidx=unique(kidx)
-      gamvec=NULL
-      for(j in 1:Jlen){
-        xi=strsplit(Jnames[j],":"); xidx=match(xi[[1]],gnames)
-        gamvec=c(gamvec,prod(object$modelspec$gammas[xidx]))
+      thvec=NULL
+      for(j in 1:lnt){
+        widx=which(gnames==newnames[j])
+        thvec=c(thvec,object$modelspec$thetas[widx])
       }
-      yhat=cbind(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(nknots)))%*%object$modelspec$coef[c(kidx,(nbf+1):(nbf+nknots))]
-      if(se.fit){pse=sqrt(postvar(dps$Kmat,dps$Jmats%*%kronecker(gamvec,diag(nknots)),object$modelspec$coef.csqrt[c(kidx,(nbf+1):(nbf+nknots)),]))}
+      jidx=(nbf+1):(nbf+nknots)
+      Jmat=dps$Jmats%*%kronecker(thvec,diag(nknots))
+      yhat=cbind(dps$Kmat,Jmat)%*%object$modelspec$coef[c(kidx,jidx)]
+      if(se.fit){pse=sqrt(postvar(dps$Kmat,Jmat,object$modelspec$coef.csqrt[c(kidx,jidx),]))}
     }# end if(is.null(Knames))
     
     ### collect new yhat
-    if(se.fit){predssa=list(fit=as.numeric(yhat),se.fit=pse)} else{predssa=as.numeric(yhat)}
-    return(predssa)
+    if(design){
+      if(se.fit){
+        predssp=list(fit=as.numeric(yhat),se.fit=pse,X=cbind(dps$Kmat,Jmat),ix=c(kidx,jidx))
+      } else{predssp=list(fit=as.numeric(yhat),X=cbind(dps$Kmat,Jmat),ix=c(kidx,jidx))}
+    } else {
+      if(se.fit){predssp=list(fit=as.numeric(yhat),se.fit=pse)} else{predssp=as.numeric(yhat)}
+    }
+    return(predssp)
     
   }

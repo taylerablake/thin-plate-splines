@@ -1,9 +1,9 @@
 \name{summary}
-\alias{summary.css}
-\alias{summary.ssa}
-\alias{summary.ssg}
-\alias{summary.ssp}
-\alias{summary.tps}
+\alias{summary.bigspline}
+\alias{summary.bigssa}
+\alias{summary.bigssg}
+\alias{summary.bigssp}
+\alias{summary.bigtps}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Summarizes Fit Information for bigsplines Model
@@ -12,15 +12,15 @@ Summarizes Fit Information for bigsplines Model
 This function summarizes basic model fit information for a fit \code{bigsplines} model.
 }
 \usage{
-\method{summary}{css}(object,fitresid=TRUE,chunksize=10000,...)
-\method{summary}{ssa}(object,fitresid=TRUE,chunksize=10000,...)
-\method{summary}{ssg}(object,fitresid=TRUE,chunksize=10000,...)
-\method{summary}{ssp}(object,fitresid=TRUE,chunksize=10000,...)
-\method{summary}{tps}(object,fitresid=TRUE,chunksize=10000,...)
+\method{summary}{bigspline}(object,fitresid=TRUE,chunksize=10000,...)
+\method{summary}{bigssa}(object,fitresid=TRUE,chunksize=10000,...)
+\method{summary}{bigssg}(object,fitresid=TRUE,chunksize=10000,...)
+\method{summary}{bigssp}(object,fitresid=TRUE,chunksize=10000,...)
+\method{summary}{bigtps}(object,fitresid=TRUE,chunksize=10000,...)
 }
 \arguments{
   \item{object}{
-  	Object of class "css" (output from \code{\link{bigspline}}), class "ssa" (output from \code{\link{bigssa}}), class "ssg" (output from \code{\link{bigssg}}), class "ssp" (output from \code{\link{bigssp}}), or class "tps" (output from \code{\link{bigtps}}).
+  	Object of class "bigspline" (output from \code{\link{bigspline}}), class "bigssa" (output from \code{\link{bigssa}}), class "bigssg" (output from \code{\link{bigssg}}), class "bigssp" (output from \code{\link{bigssp}}), or class "bigtps" (output from \code{\link{bigtps}}).
 }
   \item{fitresid}{
   Logical indicating whether the fitted values and residuals should be calculated for all data points in input \code{object}. 
@@ -36,11 +36,11 @@ This function summarizes basic model fit information for a fit \code{bigsplines}
 	\item{call}{Called model in input \code{formula}.}
   \item{type}{Type of smoothing spline that was used for each predictor.}
   \item{fitted.values}{Vector of fitted values (if \code{fitresid=TRUE}).}
-  \item{linear.predictors}{Vector of linear predictors (only for class "ssg" with \code{fitresid=TRUE}).}
-  \item{residuals}{Vector of residuals (if \code{fitresid=TRUE}). For class "ssg" these are deviance residuals.}
+  \item{linear.predictors}{Vector of linear predictors (only for class "bigssg" with \code{fitresid=TRUE}).}
+  \item{residuals}{Vector of residuals (if \code{fitresid=TRUE}). For class "bigssg" these are deviance residuals.}
   \item{sigma}{Estimated error standard deviation.}
-  \item{deviance}{Model deviance (only for class "ssg").}
-  \item{dispersion}{Estimated dispersion parameter (only for class "ssg").}
+  \item{deviance}{Model deviance (only for class "bigssg").}
+  \item{dispersion}{Estimated dispersion parameter (only for class "bigssg").}
   \item{n}{Total sample size.}
   \item{df}{Effective degrees of freedom of the model.}
   \item{info}{Model fit information: vector containing the GCV, multiple R-squared, AIC, and BIC of fit model.}
@@ -48,9 +48,10 @@ This function summarizes basic model fit information for a fit \code{bigsplines}
   \item{iter}{Number of iterative updates (\code{iter=NA} if option \code{skip.iter=TRUE} was used).}
   \item{rparm}{Rounding parameters used for model fitting.}
   \item{lambda}{Global smoothing parameter used for model fitting.}
-  \item{gammas}{Vector of additional smoothing parameters (only for class "ssa").}
-  \item{thetas}{Vector of additional smoothing parameters (only for class "ssp").}
-  \item{family}{Distribution family (only for class "ssg").}
+  \item{gammas}{Vector of additional smoothing parameters (only for class "bigssa").}
+  \item{thetas}{Vector of additional smoothing parameters (only for class "bigssp").}
+  \item{family}{Distribution family (only for class "bigssg").}
+  \item{gcvtype}{Smoothing parameter selection criterion (only for class "bigssg").}
 }
 \details{
   See \code{\link{bigspline}}, \code{\link{bigssa}}, \code{\link{bigssg}}, \code{\link{bigssp}}, and \code{\link{bigtps}} for more details.
@@ -59,7 +60,7 @@ This function summarizes basic model fit information for a fit \code{bigsplines}
 Nathaniel E. Helwig <helwig@umn.edu>
 }
 \note{
-For "css" and "tps" objects, the outputs \code{call}, \code{converged}, and \code{iter} are NA.
+For "bigspline" and "bigtps" objects, the outputs \code{call}, \code{converged}, and \code{iter} are NA.
 }
 
 \examples{

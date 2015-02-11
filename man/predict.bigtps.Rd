@@ -1,18 +1,18 @@
-\name{predict.tps}
-\alias{predict.tps}
+\name{predict.bigtps}
+\alias{predict.bigtps}
 \title{
-Predicts for "tps" Objects
+Predicts for "bigtps" Objects
 }
 \description{
 Get fitted values and standard error estimates for thin-plate splines.
 }
 \usage{
-\method{predict}{tps}(object,newdata=NULL,se.fit=FALSE,
+\method{predict}{bigtps}(object,newdata=NULL,se.fit=FALSE,
         effect=c("all","0","lin","non"),...)
 }
 \arguments{
   \item{object}{
-	Object of class "tps", which is output from \code{\link{bigtps}}.
+	Object of class "bigtps", which is output from \code{\link{bigtps}}.
 }
   \item{newdata}{
 	Vector or matrix containing new data points for prediction. See Details and Example. Default of \code{newdata=NULL} uses original data in \code{object} input.

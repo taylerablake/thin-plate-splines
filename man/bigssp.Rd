@@ -9,7 +9,8 @@ Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a sem
 \usage{
 bigssp(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
        lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
-       gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL)
+       gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL,
+       random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL)
 }
 \arguments{
   \item{formula}{
@@ -51,6 +52,15 @@ List of initial smoothing parameters for each predictor subspace. See Details.
   \item{weights}{
 Vector of positive weights for fitting (default is vector of ones).  
 }
+  \item{random}{
+Adds random effects to model (see Random Effects section).
+}
+  \item{remlalg}{
+REML algorithm for estimating variance components (see Random Effects section). Input is ignored if \code{random=NULL}.  
+}
+  \item{remlopts}{
+REML options for estimating variance components (see Random Effects section). Input is ignored if \code{random=NULL}.  
+}
 }
 \details{
  The \code{formula} syntax is similar to that used in \code{\link{lm}} and many other R regression functions. Use \code{y~x} to predict the response \code{y} from the predictor \code{x}. Use \code{y~x1+x2} to fit an additive model of the predictors \code{x1} and \code{x2}, and use \code{y~x1*x2} to fit an interaction model. The syntax \code{y~x1*x2} includes the interaction and main effects, whereas the syntax \code{y~x1:x2} only includes the interaction. See Computational Details for specifics about how non/parametric effects are estimated.
@@ -73,6 +83,9 @@ Vector of positive weights for fitting (default is vector of ones).
   \item{modelspec}{List containing specifics of fit model (needed for prediction).}
   \item{converged}{Convergence status: \code{converged=TRUE} if iterative update converged, \code{converged=FALSE} if iterative update failed to converge, and \code{converged=NA} if option \code{skip.iter=TRUE} was used.}
   \item{tnames}{Names of the terms in model.}
+  \item{random}{Random effects formula (same as input).}
+  \item{tau}{Variance parameters such that \code{sigma*sqrt(tau)} gives standard deviation of random effects (if \code{!is.null(random)}).}
+  \item{blup}{Best linear unbiased predictors (if \code{!is.null(random)}).}  
   \item{call}{Called model in input \code{formula}.}
 }
 \references{
@@ -97,7 +110,7 @@ Nathaniel E. Helwig <helwig@umn.edu>
 \section{Warnings }{
 	Cubic and cubic periodic splines transform the predictor to the interval [0,1] before fitting.
   
-  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.ssp}} function to get fitted values for full \code{yvar} vector.
+  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.bigssp}} function to get fitted values for full \code{yvar} vector.
 }
 
 \section{Computational Details }{
@@ -115,6 +128,14 @@ For \eqn{p>1} predictors, initial values for the \eqn{\theta_{k}} parameters are
 Default use of this function (\code{skip.iter=TRUE}) fixes the \eqn{\theta_{k}} parameters afer the smart start, and then finds the global smoothing parameter \eqn{\lambda} (among the input \code{lambdas}) that minimizes the GCV score. This approach typically produces a solution very similar to the more optimal solution using \code{skip.iter=FALSE}.
 
 Setting \code{skip.iter=FALSE} uses the same smart starting algorithm as setting \code{skip.iter=TRUE}. However, instead of fixing the \eqn{\theta_{k}} parameters afer the smart start, using \code{skip.iter=FALSE} iterates between estimating the optimal \eqn{\lambda} and the optimal \eqn{\theta_{k}} parameters. The R function \code{\link{nlm}} is used to minimize the GCV score with respect to the \eqn{\theta_{k}} parameters, which can be time consuming for models with many predictors.
+}
+
+\section{Random Effects }{
+The input \code{random} adds random effects to the model. Only supports two types of formulas: \code{~1|grp2} or \code{~grp1|grp2} where both \code{grp1} and \code{grp2} are factors such that the levels of \code{grp2} are nested under those of \code{grp1}. The first syntax includes a random intercept for each level of \code{grp2}, and the random effects are assumed to be iid zero-mean Gaussian variables. The second syntax includes a random intercept for each level of \code{grp2}, and the random effects are assumed to be indepedent zero-mean Gaussian variables with the variance depending on \code{grp1} membership.
+
+The input \code{remlalg} determines the REML algorithm used to estimate the variance components. Setting \code{remlalg="FS"} uses a Fisher Scoring algorithm (default). Setting \code{remlalg="EM"} uses an Expectation Maximization algorithm. Use \code{remlalg="none"} to fit a model with known variance components (entered through \code{remlopts$itau}).
+
+The input \code{remlopts} determines the REML options (control parameters) used to estimate the variance components. Should be a list with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{rtol}: convergence tolerance for REML estimation, and \code{itau}: initial estimate of variance parameters. Default: \code{remlopts=list(maxit=500,rtol=10^-3,itau=rep(1,ntau))} where \code{ntau} is the number of variance components.
 }
 
 \examples{

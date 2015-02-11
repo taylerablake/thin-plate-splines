@@ -1,4 +1,4 @@
-summary.ssa <- 
+summary.bigssp <- 
   function(object,fitresid=TRUE,chunksize=10000,...){
     
     ndpts=as.integer(object$ndf[1])
@@ -28,11 +28,11 @@ summary.ssa <-
       } # end if(is.na(object$modelspec$rparm[1]))
       resid=object$yvar-yhat
     } else{yhat=resid=NULL}
-    sumssa=list(call=object$call,type=object$type,fitted.values=yhat,residuals=resid,
+    sumssp=list(call=object$call,type=object$type,fitted.values=yhat,residuals=resid,
                 sigma=object$sigma,n=object$ndf[1],df=object$ndf[2],info=object$info,
                 converged=object$converged,iter=object$modelspec$iter,rparm=object$modelspec$rparm,
-                lambda=object$modelspec$lambda,gammas=object$modelspec$gammas)
-    class(sumssa)<-"summary.ssa"
-    return(sumssa)
+                lambda=object$modelspec$lambda,thetas=object$modelspec$thetas)
+    class(sumssp)<-"summary.bigssp"
+    return(sumssp)
     
   }

@@ -86,7 +86,7 @@ Nathaniel E. Helwig <helwig@umn.edu>
 \section{Warnings }{
   Input \code{nvec} must be greater than \code{ncol(x)+1}.
 
-  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.tps}} function to get fitted values for full \code{y} vector.
+  When using rounding parameters, output \code{fitted.values} corresponds to unique rounded predictor scores in output \code{xunique}. Use \code{\link{predict.bigtps}} function to get fitted values for full \code{y} vector.
 }
 
 \section{Computational Details }{

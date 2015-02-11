@@ -1,4 +1,4 @@
-print.css <- 
+print.bigspline <- 
   function(x,...){
     
     cat("\nSpline Type:\n")
