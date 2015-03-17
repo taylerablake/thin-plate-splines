@@ -5,17 +5,17 @@ bigssg <-
            gcvtype=c("acv","gacv","gacv.old")) {
     ###### Fits Generalized Smoothing Spline ANOVA models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: October 30, 2014
+    ###### Last modified: March 10, 2015
     
     if(class(data)=="makessg"){
-      ssgfit=ssgwork(formula,data)
+      ssgfit <- ssgwork(formula,data)
     } else{
-      ssgmk=makessg(formula,family,data,type,nknots,rparm,
-                    lambdas,skip.iter,se.lp,rseed,gcvopts,
-                    knotcheck,gammas,weights,gcvtype)
-      ssgfit=ssgwork(formula,ssgmk)
+      ssgmk <- makessg(formula,family,data,type,nknots,rparm,
+                       lambdas,skip.iter,se.lp,rseed,gcvopts,
+                       knotcheck,gammas,weights,gcvtype)
+      ssgfit <- ssgwork(formula,ssgmk)
     }
-    ssgfit=c(ssgfit,list(call=formula))
+    ssgfit <- c(ssgfit,list(call=formula))
     class(ssgfit) <- "bigssg"
     return(ssgfit)
     

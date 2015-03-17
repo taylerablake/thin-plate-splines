@@ -1,7 +1,7 @@
 print.summary.bigssa <- 
   function(x,digits=4,...){
     
-    x$info=round(x$info,digits)
+    x$info <- round(x$info,digits)
     if(is.null(x$residuals)){
       cat("\nCall:\n")
       print(x$call)
@@ -16,8 +16,8 @@ print.summary.bigssa <-
       print(c(lambda=x$lambda,x$gammas))
       cat("\n")
     } else {
-      ehat=round(quantile(x$residuals),digits)
-      names(ehat)=c("Min","1Q","Median","3Q","Max")
+      ehat <- round(quantile(x$residuals),digits)
+      names(ehat) <- c("Min","1Q","Median","3Q","Max")
       cat("\nCall:\n")
       print(x$call)
       cat("\nResiduals:\n")

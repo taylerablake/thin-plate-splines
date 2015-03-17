@@ -5,18 +5,18 @@ bigssa <-
            random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL) {
     ###### Fits Smoothing Spline ANOVA models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: December 5, 2014
+    ###### Last modified: March 10, 2015
     
     if(class(data)=="makessa"){
-      ssafit=ssawork(formula,data)
+      ssafit <- ssawork(formula,data)
     } else{
-      ssamk=makessa(formula,data,type,nknots,rparm,
-                    lambdas,skip.iter,se.fit,rseed,
-                    gcvopts,knotcheck,gammas,weights,
-                    random,remlalg,remlopts)
-      ssafit=ssawork(formula,ssamk)
+      ssamk <- makessa(formula,data,type,nknots,rparm,
+                       lambdas,skip.iter,se.fit,rseed,
+                       gcvopts,knotcheck,gammas,weights,
+                       random,remlalg,remlopts)
+      ssafit <- ssawork(formula,ssamk)
     }
-    ssafit=c(ssafit,list(call=formula))
+    ssafit <- c(ssafit,list(call=formula))
     class(ssafit) <- "bigssa"
     return(ssafit)
     

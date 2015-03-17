@@ -5,137 +5,146 @@ makessp <-
            random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL){
     ###### Makes Smoothing Splines with Parametric effects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: January 5, 2015
+    ###### Last modified: March 10, 2015
     
     ### get initial info 
-    mf=match.call()
-    m=match(c("formula","data"),names(mf),0L)
-    mf=mf[c(1L, m)]
-    mf[[1L]] = as.name("model.frame")
-    mf=eval(mf, parent.frame())          # mf contains response and predictor info
-    mt=attr(mf, "terms")                 # mt contains model info and terms 
-    et=attr(mt,"factors")                # et is effects table
-    mfdim=dim(et)                        # dim of effects table
-    ndpts=dim(mf)[1]                     # total number of data points
-    nxvar=mfdim[1]-1L                    # number of predictors
-    nterm=mfdim[2]                       # number of model terms
-    xynames=row.names(et)
-    xnames=xynames[2:(nxvar+1L)]
-    tnames=colnames(et)
+    mf <- match.call()
+    m <- match(c("formula","data"),names(mf),0L)
+    mf <- mf[c(1L, m)]
+    mf[[1L]] <- as.name("model.frame")
+    mf <- eval(mf, parent.frame())          # mf contains response and predictor info
+    mt <- attr(mf, "terms")                 # mt contains model info and terms 
+    et <- attr(mt,"factors")                # et is effects table
+    mfdim <- dim(et)                        # dim of effects table
+    ndpts <- dim(mf)[1]                     # total number of data points
+    nxvar <- mfdim[1]-1L                    # number of predictors
+    nterm <- mfdim[2]                       # number of model terms
+    xynames <- row.names(et)
+    xnames <- xynames[2:(nxvar+1L)]
+    tnames <- colnames(et)
     if(any(colSums(et>0L)>3L)){stop("Four-way (and higher-order) interactions are not supported.")}
     
     ### check response
-    yvar=as.matrix(model.response(mf, "numeric")+0.0)   # response variable
+    yvar <- as.matrix(model.response(mf, "numeric")+0.0)   # response variable
     if(ncol(yvar)>1){stop("Response must be unidimensional (vector).")}
     if(nrow(yvar)!=ndpts){stop("Response vector must have same length as predictors.")}
-    ysm=sum(yvar);  nunewr=ndpts;  fweights=rep.int(1L,ndpts);  yty=crossprod(yvar)
+    ysm <- sum(yvar)
+    nunewr <- ndpts
+    fweights <- rep.int(1L,ndpts)
+    yty <- crossprod(yvar)
     
     ### check random
-    ZtZy=lev1var=lev2var=NULL
-    if(is.null(random)==FALSE){
+    ZtZy <- lev1var <- lev2var <- NULL
+    if(!is.null(random)){
       if(class(random)!="formula"){stop("Input 'random' must be a formula.")}
-      remlalg=remlalg[1]
-      if(any(remlalg==c("FS","EM","none"))==FALSE){stop("Input 'remlalg' must be 'FS', 'EM', or 'none'.")}
-      rchar=as.character(random)
+      remlalg <- remlalg[1]
+      if(!any(remlalg==c("FS","EM","none"))){stop("Input 'remlalg' must be 'FS', 'EM', or 'none'.")}
+      rchar <- as.character(random)
       if(length(rchar)!=2L | rchar[[1]]!="~"){stop("Incorrect input for 'random' (see Details).")}
-      rs=strsplit(rchar[[2]]," \\| ")[[1]]
+      rs <- strsplit(rchar[[2]]," \\| ")[[1]]
       if(length(rs)==1L){stop("Missing '|' in random formula.")}
       if(length(rs)>2L){stop("Can only enter one '|' in random formula.")}
-      lev2var=eval(parse(text=rs[2]),data,parent.frame())
+      lev2var <- eval(parse(text=rs[2]),data,parent.frame())
       if(!is.factor(lev2var)){stop(paste("Group 2 variable",rs[2],"must be a factor."))}
       if(rs[1]!="1"){
-        rs=rev(rs)
-        lev1var=lev2var
-        lev2var=eval(parse(text=rs[2]),data,parent.frame())
+        rs <- rev(rs)
+        lev1var <- lev2var
+        lev2var <- eval(parse(text=rs[2]),data,parent.frame())
         if(!is.factor(lev2var)){stop(paste("Group 1 variable",rs[2],"must be a factor."))}
         if(nlevels(lev1var)<nlevels(lev2var)){stop(paste("Group 2 variable",rs[1],"must be nested within Group 1 variable",rs[2],"."))}
-        ntau=nlevels(lev2var)
-      } else {lev1var=rs[1]; ntau=1}
+        ntau <- nlevels(lev2var)
+      } else {
+        lev1var <- rs[1]
+        ntau <- 1
+      }
       if(!is.null(remlopts)){
         if(!is.list(remlopts)){stop("Input 'remlopts' must be a list.")}
-        rmatch=match(c("maxit","rtol","itau"),names(remlopts))
+        rmatch <- match(c("maxit","rtol","itau"),names(remlopts))
         if(any(is.na(rmatch))){stop("Invalid input for 'remlopts' (list must contain 'maxit', 'rtol', and 'itau'.")}
-        remlopts$maxit=as.integer(remlopts$maxit[1]); if(remlopts$maxit<1){stop("Input 'remlopts$maxit' must be a positive integer.")}
-        remlopts$rtol=remlopts$rtol[1]; if(remlopts$rtol<=0){stop("Input 'remlopts$rtol' must be a postive scalar.")}
+        remlopts$maxit <- as.integer(remlopts$maxit[1])
+        if(remlopts$maxit<1){stop("Input 'remlopts$maxit' must be a positive integer.")}
+        remlopts$rtol <- remlopts$rtol[1]
+        if(remlopts$rtol<=0){stop("Input 'remlopts$rtol' must be a postive scalar.")}
         if(length(remlopts$itau)!=ntau | any(remlopts$itau<=0)){stop("Input 'remlopts$itau' must contain positive initial tau values (one for each variance component).")}
       } else{
         if(remlalg=="none"){stop("You must provide initial tau parameters (via remlopts) when using remlalg='none' option.")}
-        remlopts=list(maxit=500,rtol=10^-3,itau=rep(1,ntau))
+        remlopts <- list(maxit=500,rtol=10^-3,itau=rep(1,ntau))
       }
-      ZtZy=makeZtZ(rs,lev1var,lev2var,yvar)
+      ZtZy <- makeZtZ(rs,lev1var,lev2var,yvar)
     }
     
     ### check gcvopts
     if(is.null(gcvopts[1])==FALSE){
-      gmatch=match(c("maxit","gcvtol","alpha"),names(gcvopts))
+      gmatch <- match(c("maxit","gcvtol","alpha"),names(gcvopts))
       if(any(is.na(gmatch))){stop("Invalid input for 'gcvopts'.")}
-      gcvopts$maxit=as.integer(gcvopts$maxit[1])
-      gcvopts$gcvtol=gcvopts$gcvtol[1]
-      gcvopts$alpha=gcvopts$alpha[1]
-      ugcv=unlist(gcvopts)
+      gcvopts$maxit <- as.integer(gcvopts$maxit[1])
+      gcvopts$gcvtol <- gcvopts$gcvtol[1]
+      gcvopts$alpha <- gcvopts$alpha[1]
+      ugcv <- unlist(gcvopts)
       if(any(ugcv<=0)){stop("Invalid input for 'gcvopts'.")}
       if(gcvopts$maxit<1L){stop("Invalid input for gcvopts$maxit")}
     }
     
     ### check weights
     if(is.null(weights[1])==FALSE){
-      weights=as.numeric(weights)
+      weights <- as.numeric(weights)
       if(length(weights)!=ndpts){stop("Weights vector must have same length as response.")}
       if(any(weights<=0)){stop("Weights must be positive.")}
-      if(is.na(rparm[1])==FALSE & min(weights)<=0.005){stop("Minimum weight is too small (less than 0.005).")}
-      wtchk=TRUE
+      if(!is.na(rparm[1]) & min(weights)<=0.005){stop("Minimum weight is too small (less than 0.005).")}
+      wtchk <- TRUE
     } else {weights=1; wtchk=FALSE}
     
     ### check order of things for nonparametric predictors
     if(nxvar>1){
-      snidx=match(xnames,names(type))
+      snidx <- match(xnames,names(type))
       if(any(is.na(snidx))){stop('Variable names in "type" must match variable names in "formula".')}
-      type=type[snidx]
+      type <- type[snidx]
       if(is.na(rparm[1])==FALSE){
-        rnidx=match(xnames,names(rparm))
+        rnidx <- match(xnames,names(rparm))
         if(any(is.na(rnidx))){stop('Variable names in "rparm" must match variable names in "formula".')}
-        rparm=rparm[rnidx]
+        rparm <- rparm[rnidx]
       }
-      if(is.null(thetas[1])==FALSE){
-        tnidx=match(names(thetas),tnames)
+      if(!is.null(thetas[1])){
+        tnidx <- match(names(thetas),tnames)
         if(any(is.na(tnidx))){stop('Variable names in "thetas" must match model term (subspace) names.')}
-        stest=split(unlist(thetas),names(thetas))
-        tnidx=match(names(stest),tnames)
-        thetas=unlist(unname(stest[tnidx]))
+        stest <- split(unlist(thetas),names(thetas))
+        tnidx <- match(names(stest),tnames)
+        thetas <- unlist(unname(stest[tnidx]))
         if(any(thetas<=0)){stop('Input "thetas" must be nonnegative smoothing parameters.')}
       }
     } else{
-      type=type[[1]];  if(is.null(type)){type="cub"}
-      rparm=rparm[[1]]
+      type <- type[[1]]
+      if(is.null(type)){type <- "cub"}
+      rparm <- rparm[[1]]
     }
     if(sum(type=="prm")==nxvar){stop("Must include at least one nonparametric term in formula.")}
     
     ### collect predictors
-    xvars=vector("list",nxvar)
-    for(jj in 1:nxvar){xvars[[jj]]=mf[,jj+1L]}
+    xvars <- vector("list",nxvar)
+    for(jj in 1:nxvar){xvars[[jj]] <- mf[,jj+1L]}
     rm(mf)
-    names(xvars)=xnames
+    names(xvars) <- xnames
     
     ### check predictor types
-    flvls=xrng=vector("list",nxvar)
-    xdim=vector("integer",nxvar)
+    flvls <- xrng <- vector("list",nxvar)
+    xdim <- vector("integer",nxvar)
     for(k in 1:nxvar){
       if(any(type[[k]]==c("cub","cub0","per","tps","prm"))){
-        xvars[[k]]=as.matrix(xvars[[k]]+0.0)
-        xdim[k]=ncol(xvars[[k]])
+        xvars[[k]] <- as.matrix(xvars[[k]]+0.0)
+        xdim[k] <- ncol(xvars[[k]])
         if(type[[k]]=="tps"){
           if(xdim[k]>3){stop(paste("Too many predictors for",xnames[k]))}
         } else{
           if(xdim[k]>1){stop(paste("Too many predictors for",xnames[k]))}
         }
-        if(is.na(rparm[1])==FALSE){xrng[[k]]=apply(xvars[[k]],2,range)}
-        flvls[[k]]=NA
+        if(!is.na(rparm[1])){xrng[[k]]=apply(xvars[[k]],2,range)}
+        flvls[[k]] <- NA
       } else if (type[[k]]=="nom"){
-        xvars[[k]]=as.factor(xvars[[k]])
-        flvls[[k]]=levels(xvars[[k]])
-        xvars[[k]]=matrix(as.integer(xvars[[k]]))
-        xrng[[k]]=matrix(c(1,length(flvls[[k]])),2,1)
-        xdim[k]=1L
+        xvars[[k]] <- as.factor(xvars[[k]])
+        flvls[[k]] <- levels(xvars[[k]])
+        xvars[[k]] <- matrix(as.integer(xvars[[k]]))
+        xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
+        xdim[k] <- 1L
       } else{
         stop('You must set type to either "cub", "cub0", "nom", "per", "tps", or "prm" for each effect in formula.')
       }
@@ -144,124 +153,129 @@ makessp <-
     ### check knots and random seed
     if(is.null(nknots)){
       if(nxvar==1L){
-        if(xdim[1]==1L){nknots=30} else if(xdim[1]==2L){nknots=100} else {nknots=200}
+        if(xdim[1]==1L){nknots <- 30} else if(xdim[1]==2L){nknots <- 100} else {nknots <- 200}
       } else if(nxvar==2L) {
-        if(any(xdim>1)){nknots=200} else {nknots=100}
-      } else {nknots=300} # end if(nxvar==1L)
+        if(any(xdim>1)){nknots <- 200} else {nknots <- 100}
+      } else {nknots <- 300} # end if(nxvar==1L)
     }
-    if(is.null(rseed)==FALSE && length(nknots)==1L){set.seed(rseed)}
-    theknots=vector("list",nxvar)
+    if(!is.null(rseed) && length(nknots)==1L){set.seed(rseed)}
+    theknots <- vector("list",nxvar)
     if(length(nknots)>1){
-      kidx=as.integer(nknots)
-      nknots=length(kidx)
+      kidx <- as.integer(nknots)
+      nknots <- length(kidx)
       if(any(kidx<1L) || any(kidx>nunewr)){stop("Input 'nknots' out of data index range.")}
-    } else {kidx=NA}
+    } else {kidx <- NA}
     
     ### check for rounding
     if(is.na(rparm[1])){
       for(k in 1:nxvar){
         if(any(type[[k]]==c("cub","cub0","per"))){
-          xrng[[k]]=range(xvars[[k]])
-          xvars[[k]]=(xvars[[k]]-xrng[[k]][1])/(xrng[[k]][2]-xrng[[k]][1])
+          xrng[[k]] <- range(xvars[[k]])
+          xvars[[k]] <- (xvars[[k]]-xrng[[k]][1])/(xrng[[k]][2]-xrng[[k]][1])
         }
-        if(length(kidx)>1){for(k in 1:nxvar){theknots[[k]]=as.matrix(xvars[[k]][kidx,])}}
+        if(length(kidx)>1){for(k in 1:nxvar){theknots[[k]] <- as.matrix(xvars[[k]][kidx,])}}
       } # end for(k in 1:nxvar)
-      xorig=yorig=NA
+      xorig <- yorig <- NA
     } else{
       # check rparms
-      rpall=NULL
-      for(k in 1:nxvar){rpall=c(rpall,rparm[[k]])}
+      rpall <- NULL
+      for(k in 1:nxvar){rpall <- c(rpall,rparm[[k]])}
       for(k in 1:length(rpall)){
-        rplog=log(c(rpall[k],rpall[k]/2,rpall[k]/5),base=10)
-        rpchk=rep(FALSE,3); for(jj in 1:3){rpchk[jj]=(rplog[jj]==as.integer(rplog[jj]))}
-        if(any(rpchk)==FALSE){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
+        rplog <- log(c(rpall[k],rpall[k]/2,rpall[k]/5),base=10)
+        rpchk <- rep(FALSE,3)
+        for(jj in 1:3){rpchk[jj] <- (rplog[jj]==as.integer(rplog[jj]))}
+        if(!any(rpchk)){stop("Must set input 'rparm' such that rparm=a*(10^-b) with a in {1,2,5} and b>=1 (integer).")}
       }
       # save original variables
-      xorig=xvars
-      yorig=yvar
+      xorig <- xvars
+      yorig <- yvar
       # get rounded point indices
-      gvec=matrix(1,ndpts,1);     kconst=1
+      gvec <- matrix(1,ndpts,1)
+      kconst <- 1
       for(k in 1:nxvar){
         if(type[[k]]=="nom"){
-          gvec = gvec + kconst*(xvars[[k]]-1L)
-          kconst = kconst*xrng[[k]][2]
+          gvec <- gvec + kconst*(xvars[[k]]-1L)
+          kconst <- kconst*xrng[[k]][2]
         } else if(type[[k]]=="prm"){
-          gvec = gvec + kconst*round((xvars[[k]]-xrng[[k]][1])/rparm[[k]])
-          kconst = kconst*round(1+(xrng[[k]][2]-xrng[[k]][1])/rparm[[k]])
-          xvars[[k]]=as.matrix(round(xvars[[k]]/rparm[[k]]))*rparm[[k]]
+          gvec <- gvec + kconst*round((xvars[[k]]-xrng[[k]][1])/rparm[[k]])
+          kconst <- kconst*round(1+(xrng[[k]][2]-xrng[[k]][1])/rparm[[k]])
+          xvars[[k]] <- as.matrix(round(xvars[[k]]/rparm[[k]]))*rparm[[k]]
         } else if(type[[k]]=="tps"){
           if(length(rparm[[k]])!=xdim[k]){
-            rprep=rep(rparm[[k]][1],xdim[k])
-            if(nxvar==1L){rparm=list(rprep)} else {rparm[[k]]=rprep}
+            rprep <- rep(rparm[[k]][1],xdim[k])
+            if(nxvar==1L){rparm <- list(rprep)} else {rparm[[k]] <- rprep}
           }
-          rxrng=xrng[[k]]
+          rxrng <- xrng[[k]]
           for(j in 1:xdim[k]){
-            #gvec = gvec + kconst*round((xvars[[k]][,j]-xrng[[k]][1,j])/rparm[[k]][j])
-            #kconst = kconst*round(1+(xrng[[k]][2,j]-xrng[[k]][1,j])/rparm[[k]][j])
-            rxrng[,j]=round(rxrng[,j]/rparm[[k]][j])*rparm[[k]][j]
-            gvec = gvec + kconst*round((xvars[[k]][,j]-rxrng[1,j])/rparm[[k]][j])
-            kconst = kconst*round(1+(rxrng[2,j]-rxrng[1,j])/rparm[[k]][j])
-            xvars[[k]][,j]=as.matrix(round(xvars[[k]][,j]/rparm[[k]][j]))*rparm[[k]][j]
+            rxrng[,j] <- round(rxrng[,j]/rparm[[k]][j])*rparm[[k]][j]
+            gvec <- gvec + kconst*round((xvars[[k]][,j]-rxrng[1,j])/rparm[[k]][j])
+            kconst <- kconst*round(1+(rxrng[2,j]-rxrng[1,j])/rparm[[k]][j])
+            xvars[[k]][,j] <- as.matrix(round(xvars[[k]][,j]/rparm[[k]][j]))*rparm[[k]][j]
           }
         } else{
-          gidx=round(((xvars[[k]]-xrng[[k]][1])/(xrng[[k]][2]-xrng[[k]][1]))/rparm[[k]])
-          gvec = gvec + kconst*gidx
-          kconst = kconst*round(1+1/rparm[[k]])
-          xvars[[k]]=as.matrix(gidx*rparm[[k]]);  rm(gidx)
+          gidx <- round(((xvars[[k]]-xrng[[k]][1])/(xrng[[k]][2]-xrng[[k]][1]))/rparm[[k]])
+          gvec <- gvec + kconst*gidx
+          kconst <- kconst*round(1+1/rparm[[k]])
+          xvars[[k]] <- as.matrix(gidx*rparm[[k]])
+          rm(gidx)
         }
       } # end for(k in 1:nxvar)
       # account for weights
       if(wtchk){
-        rmw=round(min(weights)/.01)*.01
-        gvec = gvec + kconst*round((weights-rmw)/.01)
-        weights=round(weights/.01)*.01
+        rmw <- round(min(weights)/.01)*.01
+        gvec <- gvec + kconst*round((weights-rmw)/.01)
+        weights <- round(weights/.01)*.01
       }
       # get unique points, frequencies, and sums
-      gvec=as.factor(gvec)
-      glindx=split(cbind(1:ndpts,yvar),gvec)
-      if(is.na(kidx[1])==FALSE){for(k in 1:nxvar){theknots[[k]]=as.matrix(xvars[[k]][kidx,])}}
-      fs=matrix(unlist(lapply(glindx,unifqsum)),ncol=3,byrow=TRUE)
-      for(k in 1:nxvar){xvars[[k]]=as.matrix(xvars[[k]][fs[,1],])}
-      yvar=fs[,2];  fweights=fs[,3];   nunewr=length(yvar)
-      if(wtchk){weights=weights[fs[,1]]}
+      gvec <- as.factor(gvec)
+      glindx <- split(cbind(1:ndpts,yvar),gvec)
+      if(is.na(kidx[1])==FALSE){for(k in 1:nxvar){theknots[[k]] <- as.matrix(xvars[[k]][kidx,])}}
+      fs <- matrix(unlist(lapply(glindx,unifqsum)),ncol=3,byrow=TRUE)
+      for(k in 1:nxvar){xvars[[k]] <- as.matrix(xvars[[k]][fs[,1],])}
+      yvar <- fs[,2]
+      fweights <- fs[,3]
+      nunewr <- length(yvar)
+      if(wtchk){weights <- weights[fs[,1]]}
     } # end if(is.na(rparm[1]))
     
     ### get knot indices
     if(length(kidx)==1L){
-      nknots=as.integer(min(c(nunewr,nknots)))
+      nknots <- as.integer(min(c(nunewr,nknots)))
       if(nknots<1){stop("Input 'nknots' must be positive integer.")}
-      kidx=sample(nunewr,nknots,prob=(fweights/ndpts))
-      for(k in 1:nxvar){theknots[[k]]=as.matrix(xvars[[k]][kidx,])}
+      kidx <- sample(nunewr,nknots,prob=(fweights/ndpts))
+      for(k in 1:nxvar){theknots[[k]] <- as.matrix(xvars[[k]][kidx,])}
     } 
     
     ### check knots
     if(knotcheck){
-      matknots=NULL
-      for(k in 1:nxvar){matknots=cbind(matknots,theknots[[k]])}
-      matknots=unique(matknots)
+      matknots <- NULL
+      for(k in 1:nxvar){matknots <- cbind(matknots,theknots[[k]])}
+      matknots <- unique(matknots)
       if(nrow(matknots)<nknots){
         if(nxvar>1){
-          csdim=c(0,cumsum(xdim))
-          for(k in 1:nxvar){theknots[[k]]=as.matrix(matknots[,(csdim[k]+1):(csdim[k]+xdim[k])])}
-        } else {theknots[[1]]=as.matrix(matknots)}
-        nknots=nrow(matknots)
+          csdim <- c(0,cumsum(xdim))
+          for(k in 1:nxvar){theknots[[k]] <- as.matrix(matknots[,(csdim[k]+1):(csdim[k]+xdim[k])])}
+        } else {theknots[[1]] <- as.matrix(matknots)}
+        nknots <- nrow(matknots)
       }
     }
     
     ### make marginal reproducing kernel matrices
-    rks=makerkm(xvars,type,theknots,xrng)
+    rks <- makerkm(xvars,type,theknots,xrng)
     
     ### collect output
-    ylist=list(yvar)
-    names(ylist)=xynames[1]
-    uidx=NULL; if(!is.null(random)){if(is.na(rparm[1])){uidx=1:ndpts} else{uidx=as.integer(gvec)}}
-    sspmk=list(et=et,n=c(nunewr,ndpts),xvars=c(xvars,ylist),nxvar=nxvar,yty=yty,
-               fweights=fweights,type=type,xdim=xdim,theknots=theknots,nknots=nknots,
-               lambdas=lambdas,rks=rks[1:4],gcvopts=gcvopts,xorig=xorig,yorig=yorig,
-               se.fit=se.fit,skip.iter=skip.iter,ysm=ysm,rparm=rparm,xrng=xrng,
-               flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,thetas=thetas,weights=weights,
-               uidx=uidx,ZtZy=ZtZy,random=random,remlalg=remlalg,remlopts=remlopts,lev1var=lev1var,lev2var=lev2var)
-    class(sspmk)<-"makessp"
+    ylist <- list(yvar)
+    names(ylist) <- xynames[1]
+    uidx <- NULL
+    if(!is.null(random)){if(is.na(rparm[1])){uidx <- 1:ndpts} else{uidx <- as.integer(gvec)}}
+    sspmk <- list(et=et,n=c(nunewr,ndpts),xvars=c(xvars,ylist),nxvar=nxvar,yty=yty,
+                  fweights=fweights,type=type,xdim=xdim,theknots=theknots,nknots=nknots,
+                  lambdas=lambdas,rks=rks[1:4],gcvopts=gcvopts,xorig=xorig,yorig=yorig,
+                  se.fit=se.fit,skip.iter=skip.iter,ysm=ysm,rparm=rparm,xrng=xrng,
+                  flvls=flvls,tpsinfo=rks$tpsinfo,formula=formula,thetas=thetas,weights=weights,
+                  uidx=uidx,ZtZy=ZtZy,random=random,remlalg=remlalg,remlopts=remlopts,
+                  lev1var=lev1var,lev2var=lev2var)
+    class(sspmk) <- "makessp"
     return(sspmk)
     
   }

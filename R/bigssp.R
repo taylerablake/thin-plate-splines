@@ -5,18 +5,18 @@ bigssp <-
            random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL) {
     ###### Fits Smoothing Splines with Parametric effects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: December 5, 2014
+    ###### Last modified: March 10, 2015
     
     if(class(data)=="makessp"){
-      sspfit=sspwork(formula,data)
+      sspfit <- sspwork(formula,data)
     } else{
-      sspmk=makessp(formula,data,type,nknots,rparm,
-                    lambdas,skip.iter,se.fit,rseed,
-                    gcvopts,knotcheck,thetas,weights,
-                    random,remlalg,remlopts)
-      sspfit=sspwork(formula,sspmk)
+      sspmk <- makessp(formula,data,type,nknots,rparm,
+                       lambdas,skip.iter,se.fit,rseed,
+                       gcvopts,knotcheck,thetas,weights,
+                       random,remlalg,remlopts)
+      sspfit <- sspwork(formula,sspmk)
     }
-    sspfit=c(sspfit,list(call=formula))
+    sspfit <- c(sspfit,list(call=formula))
     class(sspfit) <- "bigssp"
     return(sspfit)
     

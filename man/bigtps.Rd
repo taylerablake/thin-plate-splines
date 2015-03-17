@@ -71,11 +71,11 @@ If \code{TRUE}, only unique knots are used (for stability).
 	
 	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
   
+  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
-	
-	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -107,12 +107,12 @@ See Helwig and Ma for specifics about how the constrained estimation is handled.
 
 # define relatively smooth function
 set.seed(773)
-myfun<-function(x){sin(2*pi*x)}
-x<-runif(500)
-y<-myfun(x)+rnorm(500)
+myfun <- function(x){ sin(2*pi*x) }
+x <- runif(500)
+y <- myfun(x) + rnorm(500)
 
 # fit thin-plate spline (default 1 dim: 30 knots)
-tpsmod<-bigtps(x,y)
+tpsmod <- bigtps(x,y)
 tpsmod
 
 
@@ -120,48 +120,49 @@ tpsmod
 
 # define more jagged function
 set.seed(773)
-myfun<-function(x){2*x+cos(2*pi*x)}
-x<-runif(500)*4
-y<-myfun(x)+rnorm(500)
+myfun <- function(x){ 2*x+cos(2*pi*x) }
+x <- runif(500)*4
+y <- myfun(x) + rnorm(500)
 
 # try different numbers of knots
-r1mod<-bigtps(x,y,nknots=20,rparm=0.01)
-crossprod(myfun(r1mod$xunique)-r1mod$fitted)/length(r1mod$fitted)
-r2mod<-bigtps(x,y,nknots=35,rparm=0.01)
-crossprod(myfun(r2mod$xunique)-r2mod$fitted)/length(r2mod$fitted)
-r3mod<-bigtps(x,y,nknots=50,rparm=0.01)
-crossprod(myfun(r3mod$xunique)-r3mod$fitted)/length(r3mod$fitted)
+r1mod <- bigtps(x,y,nknots=20,rparm=0.01)
+crossprod( myfun(r1mod$xunique) - r1mod$fitted )/length(r1mod$fitted)
+r2mod <- bigtps(x,y,nknots=35,rparm=0.01)
+crossprod( myfun(r2mod$xunique) - r2mod$fitted )/length(r2mod$fitted)
+r3mod <- bigtps(x,y,nknots=50,rparm=0.01)
+crossprod( myfun(r3mod$xunique) - r3mod$fitted )/length(r3mod$fitted)
 
 
 ##########   EXAMPLE 3   ##########
 
 # function with two continuous predictors
 set.seed(773)
-myfun<-function(x1v,x2v){sin(2*pi*x1v)+log(x2v+.1)+cos(pi*(x1v-x2v))}
-x<-cbind(runif(500),runif(500))
-y<-myfun(x[,1],x[,2])+rnorm(500)
+myfun <- function(x1v,x2v){
+  sin(2*pi*x1v) + log(x2v+.1) + cos(pi*(x1v-x2v))
+}
+x <- cbind(runif(500),runif(500))
+y <- myfun(x[,1],x[,2]) + rnorm(500)
 
 # fit thin-plate spline with 50 knots (default 2 dim: 100 knots)
-tpsmod<-bigtps(x,y,nknots=50)
+tpsmod <- bigtps(x,y,nknots=50)
 tpsmod
-crossprod(myfun(x[,1],x[,2])-tpsmod$fitted.values)/500
+crossprod( myfun(x[,1],x[,2]) - tpsmod$fitted.values )/500
 
 
 ##########   EXAMPLE 4   ##########
 
 # function with three continuous predictors
 set.seed(773)
-myfun<-function(x1v,x2v,x3v){
-  sin(2*pi*x1v)+log(x2v+.1)+cos(pi*x3v)
+myfun <- function(x1v,x2v,x3v){
+  sin(2*pi*x1v) + log(x2v+.1) + cos(pi*x3v)
   }
-x=cbind(runif(500),runif(500),runif(500))
-y<-myfun(x[,1],x[,2],x[,3])+rnorm(500)
+x <- cbind(runif(500),runif(500),runif(500))
+y <- myfun(x[,1],x[,2],x[,3]) + rnorm(500)
 
 # fit thin-plate spline with 50 knots (default 3 dim: 200 knots)
-tpsmod<-bigtps(x,y,nknots=50)
+tpsmod <- bigtps(x,y,nknots=50)
 tpsmod
-crossprod(myfun(x[,1],x[,2],x[,3])-tpsmod$fitted.values)/500
-
+crossprod( myfun(x[,1],x[,2],x[,3]) - tpsmod$fitted.values )/500
 
 }
 

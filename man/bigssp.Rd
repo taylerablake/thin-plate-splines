@@ -94,12 +94,12 @@ REML options for estimating variance components (see Random Effects section). In
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 	
 	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  
+  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
-  
-	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -144,43 +144,44 @@ The input \code{remlopts} determines the REML options (control parameters) used 
 
 # function with four continuous predictors
 set.seed(773)
-myfun<-function(x1v,x2v,x3v,x4v){
-  sin(2*pi*x1v)+log(x2v+.1)+x3v*cos(pi*(x4v))
+myfun <- function(x1v,x2v,x3v,x4v){
+  sin(2*pi*x1v) + log(x2v+.1) + x3v*cos(pi*(x4v))
   }
-x1v<-runif(500);     x2v<-runif(500)
-x3v<-runif(500);     x4v<-runif(500)
-y<-myfun(x1v,x2v,x3v,x4v)+rnorm(500)
+x1v <- runif(500)
+x2v <- runif(500)
+x3v <- runif(500)
+x4v <- runif(500)
+y <- myfun(x1v,x2v,x3v,x4v) + rnorm(500)
 
 # fit cubic spline model with x3v*x4v interaction and x3v as "cub" 
 # (includes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="cub",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
+cubmod <- bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="cub",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 # fit cubic spline model with x3v*x4v interaction and x3v as "cub0"
 # (includes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="cub0",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
+cubmod <- bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="cub0",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 # fit model with x3v*x4v interaction treating x3v as parametric effect
 # (includes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="prm",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
+cubmod <- bigssp(y~x1v+x2v+x3v*x4v,type=list(x1v="cub",x2v="cub",x3v="prm",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 # fit cubic spline model with x3v:x4v interaction and x3v as "cub"
 # (excludes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="cub",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
+cubmod <- bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="cub",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 # fit cubic spline model with x3v:x4v interaction and x3v as "cub0"
 # (excludes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="cub0",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
+cubmod <- bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="cub0",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 # fit model with x3v:x4v interaction treating x3v as parametric effect
 # (excludes x3v and x4v main effects)
-cubmod<-bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="prm",x4v="cub"),nknots=50)
-crossprod(myfun(x1v,x2v,x3v,x4v)-cubmod$fitted.values)/500
-
+cubmod <- bigssp(y~x1v+x2v+x3v:x4v,type=list(x1v="cub",x2v="cub",x3v="prm",x4v="cub"),nknots=50)
+crossprod( myfun(x1v,x2v,x3v,x4v) - cubmod$fitted.values )/500
 
 }
 

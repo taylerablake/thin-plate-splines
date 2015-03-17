@@ -72,12 +72,13 @@ REML options for estimating variance components (see Random Effects section). In
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 
 	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  
+  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -93,26 +94,29 @@ Nathaniel E. Helwig <helwig@umn.edu>
 
 # function with two continuous predictors
 set.seed(773)
-myfun<-function(x1v,x2v){sin(2*pi*x1v)+log(x2v+.1)+cos(pi*(x1v-x2v))}
-x1v<-runif(500);     x2v<-runif(500)
-y<-myfun(x1v,x2v)+rnorm(500)
+myfun <- function(x1v,x2v){
+  sin(2*pi*x1v) + log(x2v+.1) + cos(pi*(x1v-x2v))
+}
+x1v <- runif(500)
+x2v <- runif(500)
+y <- myfun(x1v,x2v) + rnorm(500)
 
 # fit 2 possible models (create information 2 separate times)
 system.time({
-  intmod<-bigssa(y~x1v*x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
-  addmod<-bigssa(y~x1v+x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
+  intmod <- bigssa(y~x1v*x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
+  addmod <- bigssa(y~x1v+x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
 })
 
 # fit 2 possible models (create information 1 time)
 system.time({
-  makemod<-makessa(y~x1v*x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
-  int2mod<-bigssa(y~x1v*x2v,makemod)
-  add2mod<-bigssa(y~x1v+x2v,makemod)
+  makemod <- makessa(y~x1v*x2v,type=list(x1v="cub",x2v="cub"),nknots=50)
+  int2mod <- bigssa(y~x1v*x2v,makemod)
+  add2mod <- bigssa(y~x1v+x2v,makemod)
 })
 
 # check difference (no difference)
-crossprod(intmod$fitted.values-int2mod$fitted.values)
-crossprod(addmod$fitted.values-add2mod$fitted.values)
+crossprod( intmod$fitted.values - int2mod$fitted.values )
+crossprod( addmod$fitted.values - add2mod$fitted.values )
 
 }
 

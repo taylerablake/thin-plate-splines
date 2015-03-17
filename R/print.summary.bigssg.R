@@ -1,7 +1,7 @@
 print.summary.bigssg <- 
   function(x,digits=4,...){
     
-    x$info=round(x$info,digits)
+    x$info <- round(x$info,digits)
     if(is.null(x$residuals)){
       cat("\nFamily:\n")
       cat(x$family,"\n")
@@ -20,8 +20,8 @@ print.summary.bigssg <-
       cat("selected using ",x$gcvtype," criterion\n")
       cat("\n")
     } else {
-      ehat=round(quantile(x$residuals),digits)
-      names(ehat)=c("Min","1Q","Median","3Q","Max")
+      ehat <- round(quantile(x$residuals),digits)
+      names(ehat) <- c("Min","1Q","Median","3Q","Max")
       cat("\nFamily:\n")
       cat(x$family,"\n")
       cat("\nCall:\n")

@@ -73,12 +73,13 @@ Cross-validation criterion for selecting smoothing parameters (see Details).
   Helwig, N. E. (in preparation). Nonparametric exponential family regression for ultra large samples: Scalable computation via rounding parameters. 
 
 	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  
+  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
   
-	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -94,32 +95,35 @@ Nathaniel E. Helwig <helwig@umn.edu>
 
 # function with two continuous predictors
 set.seed(1)
-myfun<-function(x1v,x2v){sin(2*pi*x1v)+log(x2v+.1)+cos(pi*(x1v-x2v))}
-ndpts<-1000;    x1v<-runif(ndpts);    x2v<-runif(ndpts)
+myfun <- function(x1v,x2v){
+  sin(2*pi*x1v) + log(x2v+.1) + cos(pi*(x1v-x2v))
+}
+ndpts <- 1000
+x1v <- runif(ndpts)
+x2v <- runif(ndpts)
 
 # binomial response (no weights)
 set.seed(773)
-lp<-myfun(x1v,x2v)
-p<-1/(1+exp(-lp))
-y<-rbinom(n=ndpts,size=1,p=p)
+lp <- myfun(x1v,x2v)
+p <- 1/(1+exp(-lp))
+y <- rbinom(n=ndpts,size=1,p=p)
 
 # fit 2 possible models (create information 2 separate times)
 system.time({
-  intmod<-bigssg(y~x1v*x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
-  addmod<-bigssg(y~x1v+x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
+  intmod <- bigssg(y~x1v*x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
+  addmod <- bigssg(y~x1v+x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
 })
 
 # fit 2 possible models (create information 1 time)
 system.time({
-  makemod<-makessg(y~x1v*x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
-  int2mod<-bigssg(y~x1v*x2v,data=makemod)
-  add2mod<-bigssg(y~x1v+x2v,data=makemod)
+  makemod <- makessg(y~x1v*x2v,family="binomial",type=list(x1v="cub",x2v="cub"),nknots=50)
+  int2mod <- bigssg(y~x1v*x2v,data=makemod)
+  add2mod <- bigssg(y~x1v+x2v,data=makemod)
 })
 
 # check difference (no difference)
-crossprod(intmod$fitted.values-int2mod$fitted.values)
-crossprod(addmod$fitted.values-add2mod$fitted.values)
-
+crossprod( intmod$fitted.values - int2mod$fitted.values )
+crossprod( addmod$fitted.values - add2mod$fitted.values )
 
 }
 

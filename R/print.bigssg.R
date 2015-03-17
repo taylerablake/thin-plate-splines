@@ -1,8 +1,8 @@
 print.bigssg <- 
   function(x,...){
     
-    xnames=names(x$xvars)
-    nv=length(xnames)
+    xnames <- names(x$xvars)
+    nv <- length(xnames)
     if(nv==1L){
       cat("\nFamily:\n")
       cat(x$family,"\n")
@@ -22,7 +22,9 @@ print.bigssg <-
       cat("\nAlgorithm Converged:\n")
       if(is.na(x$converge)){
         cat("Iterative update skipped (skip.iter=TRUE)")
-      } else {cat(x$converged)}
+      } else {
+        cat(x$converged)
+      }
       cat("\n ")
     } # end if(nv==1L)
     

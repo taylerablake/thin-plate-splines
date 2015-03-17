@@ -2,7 +2,7 @@ remlvc <-
   function(yty,Xty,Zty,XtX,ZtZ,XtZ,ndf,rdm,tau=rep(1,length(rdm)),imx=100,tol=10^-5,alg=c("FS","EM")){
     ###### REML Estimation of Variance Components (via Fisher Scoring or EM)
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: November 23, 2014
+    ###### Last modified: March 11, 2015
     
     ### Inputs: 
     # yty: crossprod(y)
@@ -37,66 +37,76 @@ remlvc <-
     #     note: e ~ N(0,sig*diag(n))
     
     ### initial info
-    nre=length(rdm)
+    nre <- length(rdm)
     if(length(tau)!=nre){stop("Inputs 'rdm' and 'tau' must have same length.")}
-    cdm=c(0,cumsum(rdm))
-    XtXi=pinvsm(XtX)
-    XtXiZ=XtXi%*%XtZ
-    ZtZX=(-1)*crossprod(XtZ,XtXiZ)
-    if(is.matrix(ZtZ)) {ZtZX=ZtZX+ZtZ} else {diag(ZtZX)=diag(ZtZX)+ZtZ}
-    ZtyX=Zty-crossprod(XtZ,XtXi)%*%Xty
+    cdm <- c(0,cumsum(rdm))
+    XtXi <- pinvsm(XtX)
+    XtXiZ <- XtXi%*%XtZ
+    ZtZX <- (-1)*crossprod(XtZ,XtXiZ)
+    if(is.matrix(ZtZ)) {ZtZX <- ZtZX+ZtZ} else {diag(ZtZX) <- diag(ZtZX)+ZtZ}
+    ZtyX <- Zty-crossprod(XtZ,XtXi)%*%Xty
     
     ### iterative update
-    alg=alg[1]
-    vtol=1; iter=0; tauold=tau
+    alg <- alg[1]
+    vtol <- 1
+    iter <- 0
+    tauold <- tau
     if(alg=="FS"){
       # Fisher Scoring
-      gvec=rep(0,nre);  hmat=matrix(0,nre,nre)
+      gvec <- rep(0,nre)
+      hmat <- matrix(0,nre,nre)
       while(vtol>tol && iter<imx) {
         # update fixed and random effects
-        Dmat=pinvsm(ZtZX+diag(rep(1/tau,times=rdm)))
-        Bmat=XtXiZ%*%Dmat
-        alpha=(XtXi+Bmat%*%t(XtXiZ))%*%Xty-Bmat%*%Zty
-        beta=Dmat%*%ZtyX
-        sig=(yty-t(c(Xty,Zty))%*%c(alpha,beta))/ndf
+        Dmat <- pinvsm(ZtZX+diag(rep(1/tau,times=rdm)))
+        Bmat <- XtXiZ%*%Dmat
+        alpha <- (XtXi+Bmat%*%t(XtXiZ))%*%Xty-Bmat%*%Zty
+        beta <- Dmat%*%ZtyX
+        sig <- (yty-t(c(Xty,Zty))%*%c(alpha,beta))/ndf
         # update score and information
         for(j in 1:nre){
-          idx=(1+cdm[j]):cdm[j+1]
-          trval=sum(diag(Dmat[idx,idx]))
-          gval=(rdm[j]/tau[j])-(trval/(tau[j]^2))
-          gvec[j]=(-1)*gval+crossprod(beta[idx])/((tau[j]^2)*sig)
-          hmat[j,j]=(rdm[j]/(tau[j]^2))-2*(trval/(tau[j]^3))+sum(Dmat[idx,idx]^2)/(tau[j]^4)
+          idx <- (1+cdm[j]):cdm[j+1]
+          trval <- sum(diag(Dmat[idx,idx]))
+          gval <- (rdm[j]/tau[j])-(trval/(tau[j]^2))
+          gvec[j] <- (-1)*gval+crossprod(beta[idx])/((tau[j]^2)*sig)
+          hmat[j,j] <- (rdm[j]/(tau[j]^2))-2*(trval/(tau[j]^3))+sum(Dmat[idx,idx]^2)/(tau[j]^4)
           if(j>1){
             for(k in 1:(j-1)){
-              kidx=(1+cdm[k]):cdm[k+1]
-              hmat[j,k]=hmat[k,j]=sum(Dmat[idx,kidx]^2)/((tau[j]^2)*(tau[k]^2))
+              kidx <- (1+cdm[k]):cdm[k+1]
+              hmat[j,k] <- hmat[k,j] <- sum(Dmat[idx,kidx]^2)/((tau[j]^2)*(tau[k]^2))
             }
           }
         }
         # update parameters and check for convergence
-        tau=tau+pinvsm(hmat)%*%gvec
-        vtol=sqrt(crossprod(tau-tauold))/sqrt(sum(tau^2))
-        tauold=tau;  iter=iter+1
+        tau <- tau+pinvsm(hmat)%*%gvec
+        vtol <- sqrt(crossprod(tau-tauold))/sqrt(sum(tau^2))
+        tauold <- tau
+        iter <- iter+1
       }
     } else {
       # Expectation Maximization
-      if(is.matrix(ZtZ)){WtW=rbind(cbind(XtX,XtZ),cbind(t(XtZ),ZtZ))} else {WtW=rbind(cbind(XtX,XtZ),cbind(t(XtZ),diag(ZtZ)))}
-      nx=nrow(XtX); sig=0
+      if(is.matrix(ZtZ)){
+        WtW <- rbind(cbind(XtX,XtZ),cbind(t(XtZ),ZtZ))
+      } else {
+        WtW <- rbind(cbind(XtX,XtZ),cbind(t(XtZ),diag(ZtZ)))
+      }
+      nx <- nrow(XtX)
+      sig <- 0
       while(vtol>tol && iter<imx) {
         # update fixed and random effects
-        Dmat=pinvsm(ZtZX+diag(rep(1/tau,times=rdm)))
-        Bmat=XtXiZ%*%Dmat
-        alpha=(XtXi+Bmat%*%t(XtXiZ))%*%Xty-Bmat%*%Zty
-        beta=Dmat%*%ZtyX
-        abhat=c(alpha,beta)
-        sig = (yty - 2*t(c(Xty,Zty))%*%abhat + crossprod(abhat,WtW%*%abhat) + sig*(nx+sum(diag(Dmat%*%ZtZX))))/ndf
+        Dmat <- pinvsm(ZtZX+diag(rep(1/tau,times=rdm)))
+        Bmat <- XtXiZ%*%Dmat
+        alpha <- (XtXi+Bmat%*%t(XtXiZ))%*%Xty-Bmat%*%Zty
+        beta <- Dmat%*%ZtyX
+        abhat <- c(alpha,beta)
+        sig <- (yty - 2*t(c(Xty,Zty))%*%abhat + crossprod(abhat,WtW%*%abhat) + sig*(nx+sum(diag(Dmat%*%ZtZX))))/ndf
         # update parameters and check for convergence
         for(j in 1:nre){
-          jidx=(1+cdm[j]):cdm[j+1]
-          tau[j] = (mean(beta[jidx]^2)/sig) + sum(diag(Dmat[jidx,jidx]))/rdm[j]
+          jidx <- (1+cdm[j]):cdm[j+1]
+          tau[j] <- (mean(beta[jidx]^2)/sig) + sum(diag(Dmat[jidx,jidx]))/rdm[j]
         }
-        vtol=sqrt(crossprod(tau-tauold))/sqrt(sum(tau^2))
-        tauold=tau;  iter=iter+1
+        vtol <- sqrt(crossprod(tau-tauold))/sqrt(sum(tau^2))
+        tauold <- tau
+        iter <- iter+1
       }
     } # end if(alg=="FS")
     

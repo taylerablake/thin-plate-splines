@@ -81,12 +81,12 @@ If \code{TRUE}, only unique knots are used (for stability).
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 	
 	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  
+  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
   Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
-  
-	Helwig, N. E. and Ma, P. (in preparation). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -141,16 +141,16 @@ For a periodic cubic spline (\code{type="per"}) with \eqn{x \in [0,1]}, the need
 
 # define relatively smooth function
 set.seed(773)
-myfun<-function(x){sin(2*pi*x)}
-x<-runif(10^6)
-y<-myfun(x)+rnorm(10^6)
+myfun <- function(x){ sin(2*pi*x) }
+x <- runif(10^6)
+y <- myfun(x) + rnorm(10^6)
 
 # cubic, different cubic, and periodic splines
-cubmod<-bigspline(x,y)
+cubmod <- bigspline(x,y)
 cubmod
-cub0mod<-bigspline(x,y,type="cub0")
+cub0mod <- bigspline(x,y,type="cub0")
 cub0mod
-permod<-bigspline(x,y,type="per")
+permod <- bigspline(x,y,type="per")
 permod
 
 
@@ -158,17 +158,17 @@ permod
 
 # define more jagged function
 set.seed(773)
-myfun<-function(x){2*x+cos(4*pi*x)}
-x<-runif(10^6)*4
-y<-myfun(x)+rnorm(10^6)
+myfun <- function(x){ 2*x + cos(4*pi*x) }
+x <- runif(10^6)*4
+y <- myfun(x) + rnorm(10^6)
 
 # try different numbers of knots
-r1mod<-bigspline(x,y,nknots=20)
-crossprod(myfun(r1mod$xunique)-r1mod$fitted)/length(r1mod$fitted)
-r2mod<-bigspline(x,y,nknots=30)
-crossprod(myfun(r2mod$xunique)-r2mod$fitted)/length(r2mod$fitted)
-r3mod<-bigspline(x,y,nknots=40)
-crossprod(myfun(r3mod$xunique)-r3mod$fitted)/length(r3mod$fitted)
+r1mod <- bigspline(x,y,nknots=20)
+crossprod( myfun(r1mod$xunique) - r1mod$fitted )/length(r1mod$fitted)
+r2mod <- bigspline(x,y,nknots=30)
+crossprod( myfun(r2mod$xunique) - r2mod$fitted )/length(r2mod$fitted)
+r3mod <- bigspline(x,y,nknots=40)
+crossprod( myfun(r3mod$xunique) - r3mod$fitted )/length(r3mod$fitted)
 
 }
 

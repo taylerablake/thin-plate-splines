@@ -1,3 +1,31 @@
+Changes from ver 1.0-5 to ver 1.0-6     [Mar-16-2015]
+   1) bigsplines-package
+	*   Improvements to imagebar (more customization options)
+	*   Improvements to all prediction functions (more options)
+	*   Minor improvements to internals of all functions
+   2) imagebar
+	*   New input `zline’ to control z-label placement
+	*   New input `pltimage’ to control image plt (see par)
+	*   New input `pltbar’ to control colorbar plt (see par)
+	*   Reduced default number of colors to 21 (instead of 100)
+	*   Slight modification to default colors
+   3) predict.bigspline
+	*   New input `design’ to return design matrix
+	*   New input `smoothMatrix’ to return smoothing matrix
+   4) predict.bigssa
+	*   New input `design’ to return design matrix
+	*   New input `smoothMatrix’ to return smoothing matrix
+   5) predict.bigssg
+	*   New input `design’ to return design matrix
+	*   New input `smoothMatrix’ to return smoothing matrix
+   6) predict.bigssp
+	*   New input `design’ to return design matrix
+	*   New input `smoothMatrix’ to return smoothing matrix
+   7) predict.bigtps
+	*   New input `design’ to return design matrix
+	*   New input `smoothMatrix’ to return smoothing matrix
+
+
 Changes from ver 1.0-4 to ver 1.0-5     [Feb-11-2015]
    1) bigsplines-package
 	*   Minor changes to bigspline, bigtps, and imagebar.

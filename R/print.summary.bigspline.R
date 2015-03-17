@@ -1,7 +1,7 @@
 print.summary.bigspline <- 
   function(x,digits=4,...){
     
-    x$info=round(x$info,digits)
+    x$info <- round(x$info,digits)
     if(is.null(x$residuals)){
       cat("\nSpline Type:\n")
       cat(x$type,"\n")
@@ -15,8 +15,8 @@ print.summary.bigspline <-
       cat("\nSmoothing Parameter:\n")
       cat(x$lambda,"\n ")
     } else {
-      ehat=round(quantile(x$residuals),digits)
-      names(ehat)=c("Min","1Q","Median","3Q","Max")
+      ehat <- round(quantile(x$residuals),digits)
+      names(ehat) <- c("Min","1Q","Median","3Q","Max")
       cat("\nSpline Type:\n")
       cat(x$type,"\n")
       cat("\nResiduals:\n")
