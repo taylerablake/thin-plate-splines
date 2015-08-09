@@ -80,9 +80,9 @@ If \code{TRUE}, only unique knots are used (for stability).
 
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 	
-	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
   
-  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
@@ -168,6 +168,23 @@ crossprod( myfun(r1mod$xunique) - r1mod$fitted )/length(r1mod$fitted)
 r2mod <- bigspline(x,y,nknots=30)
 crossprod( myfun(r2mod$xunique) - r2mod$fitted )/length(r2mod$fitted)
 r3mod <- bigspline(x,y,nknots=40)
+crossprod( myfun(r3mod$xunique) - r3mod$fitted )/length(r3mod$fitted)
+
+
+##########   EXAMPLE 3   ##########
+
+# define more jagged function
+set.seed(773)
+myfun <- function(x){ 2*x + cos(4*pi*x) }
+x <- runif(10^6)*4
+y <- myfun(x) + rnorm(10^6)
+
+# try different rounding parameters
+r1mod <- bigspline(x,y,rparm=0.05)
+crossprod( myfun(r1mod$xunique) - r1mod$fitted )/length(r1mod$fitted)
+r2mod <- bigspline(x,y,rparm=0.02)
+crossprod( myfun(r2mod$xunique) - r2mod$fitted )/length(r2mod$fitted)
+r3mod <- bigspline(x,y,rparm=0.01)
 crossprod( myfun(r3mod$xunique) - r3mod$fitted )/length(r3mod$fitted)
 
 }

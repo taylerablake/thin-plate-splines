@@ -10,7 +10,8 @@ Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a sem
 bigssp(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
        lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
        gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL,
-       random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL)
+       random=NULL,remlalg=c("FS","EM","none"),remliter=500,
+       remltol=10^-4,remltau=NULL)
 }
 \arguments{
   \item{formula}{
@@ -58,16 +59,22 @@ Adds random effects to model (see Random Effects section).
   \item{remlalg}{
 REML algorithm for estimating variance components (see Random Effects section). Input is ignored if \code{random=NULL}.  
 }
-  \item{remlopts}{
-REML options for estimating variance components (see Random Effects section). Input is ignored if \code{random=NULL}.  
+  \item{remliter}{
+Maximum number of iterations for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
+}
+  \item{remltol}{
+Convergence tolerance for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
+}
+  \item{remltau}{
+Initial estimate of variance parameters for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
 }
 }
 \details{
  The \code{formula} syntax is similar to that used in \code{\link{lm}} and many other R regression functions. Use \code{y~x} to predict the response \code{y} from the predictor \code{x}. Use \code{y~x1+x2} to fit an additive model of the predictors \code{x1} and \code{x2}, and use \code{y~x1*x2} to fit an interaction model. The syntax \code{y~x1*x2} includes the interaction and main effects, whereas the syntax \code{y~x1:x2} only includes the interaction. See Computational Details for specifics about how non/parametric effects are estimated.
  
- See \code{\link{bigspline}} for definitions of \code{type="cub"}, \code{type="cub0"}, and \code{type="per"} splines, which can handle one-dimensional predictors. See Appendix of Helwig and Ma (in press) for information about \code{type="tps"} and \code{type="nom"} splines. Note that \code{type="tps"} can handle one-, two-, or three-dimensional predictors. I recommend using \code{type="cub"} if the predictor scores have no extreme outliers; when outliers are present, \code{type="tps"} may produce a better result. 
+ See \code{\link{bigspline}} for definitions of \code{type="cub"}, \code{type="cub0"}, and \code{type="per"} splines, which can handle one-dimensional predictors. See Appendix of Helwig and Ma (2015) for information about \code{type="tps"} and \code{type="nom"} splines. Note that \code{type="tps"} can handle one-, two-, or three-dimensional predictors. I recommend using \code{type="cub"} if the predictor scores have no extreme outliers; when outliers are present, \code{type="tps"} may produce a better result. 
   
-  Using the rounding parameter input \code{rparm} can greatly speed-up and stabilize the fitting for large samples. For typical cases, I recommend using \code{rparm=0.01} for cubic and periodic splines, but smaller rounding parameters may be needed for particularly jagged functions. For thin-plate splines, the data are NOT transformed to the interval [0,1] before fitting, so rounding parameter should be on raw data scale. Also, for \code{type="tps"} you can enter one rounding parameter for each predictor dimension. Use \code{rparm=1} for nominal splines.
+ Using the rounding parameter input \code{rparm} can greatly speed-up and stabilize the fitting for large samples. For typical cases, I recommend using \code{rparm=0.01} for cubic and periodic splines, but smaller rounding parameters may be needed for particularly jagged functions. For thin-plate splines, the data are NOT transformed to the interval [0,1] before fitting, so the rounding parameter should be on the raw data scale. Also, for \code{type="tps"} you can enter one rounding parameter for each predictor dimension. Use \code{rparm=1} for nominal splines.
 }
 \value{
 	\item{fitted.values}{Vector of fitted values corresponding to the original data points in \code{xvars} (if \code{rparm=NA}) or the rounded data points in \code{xunique} (if \code{rparm} is used).}
@@ -93,9 +100,9 @@ REML options for estimating variance components (see Random Effects section). In
 
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 	
-	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
   
-  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
@@ -131,11 +138,13 @@ Setting \code{skip.iter=FALSE} uses the same smart starting algorithm as setting
 }
 
 \section{Random Effects }{
-The input \code{random} adds random effects to the model. Only supports two types of formulas: \code{~1|grp2} or \code{~grp1|grp2} where both \code{grp1} and \code{grp2} are factors such that the levels of \code{grp2} are nested under those of \code{grp1}. The first syntax includes a random intercept for each level of \code{grp2}, and the random effects are assumed to be iid zero-mean Gaussian variables. The second syntax includes a random intercept for each level of \code{grp2}, and the random effects are assumed to be indepedent zero-mean Gaussian variables with the variance depending on \code{grp1} membership.
+The input \code{random} adds random effects to the model assuming a variance components structure. Both nested and crossed random effects are supported. In all cases, the random effects are assumed to be indepedent zero-mean Gaussian variables with the variance depending on group membership.
 
-The input \code{remlalg} determines the REML algorithm used to estimate the variance components. Setting \code{remlalg="FS"} uses a Fisher Scoring algorithm (default). Setting \code{remlalg="EM"} uses an Expectation Maximization algorithm. Use \code{remlalg="none"} to fit a model with known variance components (entered through \code{remlopts$itau}).
+Random effects are distinguished by vertical bars ("|"), which separate expressions for design matrices (left) from group factors (right). For example, the syntax \code{~1|group} includes a random intercept for each level of \code{group}, whereas the syntax \code{~1+x|group} includes both a random intercept and a random slope for each level of \code{group}. For crossed random effects, parentheses are needed to distinguish different terms, e.g., \code{~(1|group1)+(1|group2)} includes a random intercept for each level of \code{group1} and a random intercept for each level of \code{group2}, where both \code{group1} and \code{group2} are factors. For nested random effects, the syntax \code{~group|subject} can be used, where both \code{group} and \code{subject} are factors such that the levels of \code{subject} are nested within those of \code{group}.
 
-The input \code{remlopts} determines the REML options (control parameters) used to estimate the variance components. Should be a list with 3 elements: (a) \code{maxit}: maximum number of algorithm iterations, (b) \code{rtol}: convergence tolerance for REML estimation, and \code{itau}: initial estimate of variance parameters. Default: \code{remlopts=list(maxit=500,rtol=10^-3,itau=rep(1,ntau))} where \code{ntau} is the number of variance components.
+The input \code{remlalg} determines the REML algorithm used to estimate the variance components. Setting \code{remlalg="FS"} uses a Fisher Scoring algorithm (default). Setting \code{remlalg="EM"} uses an Expectation Maximization algorithm. Use \code{remlalg="none"} to fit a model with known variance components (entered through \code{remltau}).
+
+The input \code{remliter} sets the maximum number of iterations for the REML estimation. The input \code{remltol} sets the convergence tolerance for the REML estimation, which is determined via relative change in the REML log-likelihood. The input \code{remltau} sets the initial estimates of variance parameters; default is \code{remltau = rep(1,ntau)} where \code{ntau} is the number of variance components.
 }
 
 \examples{

@@ -10,7 +10,8 @@ This function creates a list containing the necessary information to fit a smoot
 makessa(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
         lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
         gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
-        random=NULL,remlalg=c("FS","EM","none"),remlopts=NULL)
+        random=NULL,remlalg=c("FS","EM","none"),remliter=500,
+       remltol=10^-4,remltau=NULL)
 }
 \arguments{
   \item{formula}{
@@ -58,8 +59,14 @@ Adds random effects to model (see Random Effects section).
   \item{remlalg}{
 REML algorithm for estimating variance components (see Random Effects section). Input is ignored if \code{is.null(random)}.  
 }
-  \item{remlopts}{
-REML options for estimating variance components (see Random Effects section). Input is ignored if \code{is.null(random)}.  
+  \item{remliter}{
+Maximum number of iterations for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
+}
+  \item{remltol}{
+Convergence tolerance for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
+}
+  \item{remltau}{
+Initial estimate of variance parameters for REML estimation of variance components. Input is ignored if \code{random=NULL}.  
 }
 }
 \details{
@@ -71,9 +78,9 @@ REML options for estimating variance components (see Random Effects section). In
 \references{
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 
-	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
   
-  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   

@@ -1,34 +1,97 @@
 makeZtX <-
-  function(lev1var,lev2var,Ku,Ju,uidx,l1names=NULL){
+  function(reinfo,Ku,Ju,uidx,Zmat=NULL){
     
-    v2lev <- levels(lev2var)
-    v2nlev <- length(v2lev)
     nKcol <- ncol(Ku)
     nJcol <- ncol(Ju)
-    if(length(lev1var)==1L){
-      # random intercept model
-      ZtK <- matrix(0,v2nlev,ncol(Ku))
-      ZtJ <- matrix(0,v2nlev,ncol(Ju))
-      for(k in 1:v2nlev){
-        idx <- which(lev2var==v2lev[k])
-        lidx <- length(idx)
-        ZtK[k,] <- colSums(matrix(Ku[uidx[idx],],nrow=lidx,ncol=nKcol))
-        ZtJ[k,] <- colSums(matrix(Ju[uidx[idx],],nrow=lidx,ncol=nJcol))
-      }
-    } else {
-      # subjects nested in groups
-      v1lev <- l1names
-      v1nlev <- length(v1lev)
-      ZtK <- matrix(0,v1nlev,ncol(Ku))
-      ZtJ <- matrix(0,v1nlev,ncol(Ju))
-      for(k in 1:v1nlev){
-        idx <- which(lev1var==v1lev[k])
-        lidx <- length(idx)
-        ZtK[k,] <- colSums(matrix(Ku[uidx[idx],],nrow=lidx,ncol=nKcol))
-        ZtJ[k,] <- colSums(matrix(Ju[uidx[idx],],nrow=lidx,ncol=nJcol))
-      }
-    }
     
-    return(cbind(ZtK,ZtJ))
+    if(is.null(Zmat)){
+      # one grouping variable
+      
+      numre <- length(reinfo$reNames[[1]])
+      n2lev <- nlevels(reinfo$grpvar[,1])
+      
+      if(numre>1L){
+        # multiple random effects
+        
+        ZtK <- matrix(0,n2lev*numre,nKcol)
+        ZtJ <- matrix(0,n2lev*numre,nJcol)
+        gsplt <- split(1:nrow(reinfo$grpvar),reinfo$grpvar[,1])
+        recon <- 0L
+        
+        for(m in 1:numre){
+          
+          if(reinfo$reNames[[1]][m]=="1"){
+            
+            for(k in 1:n2lev){
+              lidx <- length(gsplt[[k]])
+              ZtK[k+recon,] <- colSums(matrix(Ku[uidx[gsplt[[k]]],],nrow=lidx,ncol=nKcol))
+              ZtJ[k+recon,] <- colSums(matrix(Ju[uidx[gsplt[[k]]],],nrow=lidx,ncol=nJcol))
+            }
+            
+          } else {
+            
+            cx <- match(reinfo$reNames[[1]][m],names(reinfo$raneff[[1]]))
+            for(k in 1:n2lev){
+              lidx <- length(gsplt[[k]])
+              ZtK[k+recon,] <- colSums(reinfo$raneff[[1]][gsplt[[k]],cx]*matrix(Ku[uidx[gsplt[[k]]],],nrow=lidx,ncol=nKcol))
+              ZtJ[k+recon,] <- colSums(reinfo$raneff[[1]][gsplt[[k]],cx]*matrix(Ju[uidx[gsplt[[k]]],],nrow=lidx,ncol=nJcol))
+            }
+            
+          } # end if(reinfo$reNames[[1]][m]=="1")
+          
+          recon <- recon + n2lev
+          
+        } # end for(m in 1:numre)
+        
+        return(cbind(ZtK,ZtJ))
+        
+      } else {
+        # single random effect
+        
+        ZtK <- matrix(0,n2lev,nKcol)
+        ZtJ <- matrix(0,n2lev,nJcol)
+        
+        if(reinfo$reNames[[1]]=="1"){
+          # random intercept only
+          
+          gsplt <- split(1:nrow(reinfo$grpvar),reinfo$grpvar[,1])
+          for(k in 1:n2lev){
+            lidx <- length(gsplt[[k]])
+            ZtK[k,] <- colSums(matrix(Ku[uidx[gsplt[[k]]],],nrow=lidx,ncol=nKcol))
+            ZtJ[k,] <- colSums(matrix(Ju[uidx[gsplt[[k]]],],nrow=lidx,ncol=nJcol))
+          }
+          
+        } else if(is.factor(reinfo$raneff[[1]][,1])) {
+          # subjects in groups
+          
+          gsplt <- split(1:nrow(reinfo$grpvar),list(reinfo$grpvar[,1],reinfo$raneff[[1]][,1]))
+          glen <- sapply(gsplt, length)
+          gsplt <- gsplt[glen>0L]
+          for(k in 1:n2lev){
+            lidx <- length(gsplt[[k]])
+            ZtK[k,] <- colSums(matrix(Ku[uidx[gsplt[[k]]],],nrow=lidx,ncol=nKcol))
+            ZtJ[k,] <- colSums(matrix(Ju[uidx[gsplt[[k]]],],nrow=lidx,ncol=nJcol))
+          }
+          
+        } else {
+          # random slope only
+          
+          gsplt <- split(1:nrow(reinfo$grpvar),reinfo$grpvar[,1])
+          for(k in 1:n2lev){
+            lidx <- length(gsplt[[k]])
+            ZtK[k,] <- colSums(reinfo$raneff[[1]][gsplt[[k]],1]*matrix(Ku[uidx[gsplt[[k]]],],nrow=lidx,ncol=nKcol))
+            ZtJ[k,] <- colSums(reinfo$raneff[[1]][gsplt[[k]],1]*matrix(Ju[uidx[gsplt[[k]]],],nrow=lidx,ncol=nJcol))
+          }
+          
+        } # end if(reinfo$reNames[[1]]=="1")
+        
+        return(cbind(ZtK,ZtJ))
+        
+      } # end if(numre>1L)
+      
+    } else {
+      return(crossprod(Zmat, cbind(Ku,Ju)[uidx,]))
+    } # end if(is.null(Zmat))
+    
     
   }

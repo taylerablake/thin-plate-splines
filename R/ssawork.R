@@ -93,7 +93,7 @@ ssawork <-
     if(!is.null(ssamk$random)){
       
       # some initializations
-      XtZ <- t(makeZtX(ssamk$lev1var,ssamk$lev2var,dps$Kmat,dps$Jmats,ssamk$uidx,names(ssamk$ZtZy[[1]])))
+      XtZ <- t(makeZtX(ssamk$reinfo,dps$Kmat,dps$Jmats,ssamk$uidx,ssamk$ZtZy$Zmat))
       nbf <- length(Kty)
       cbf <- length(Jty)
       
@@ -101,35 +101,36 @@ ssawork <-
       if(ssamk$remlalg!="none"){
         if(jdim[2]>ssamk$nknots){
           gammat <- kronecker(rep(1,jdim[2]/ssamk$nknots),diag(ssamk$nknots))
-          ktj <- KtJ%*%gammat     
-          if(length(ssamk$lev1var)==1L){
+          ktj <- KtJ%*%gammat
+          if(length(ssamk$ZtZy$rdm)==1L){
             varhat <- remlri(ssamk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
                              ssamk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),ssamk$n[2]-ssamk$nknots,
-                             tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+                             tau=ssamk$remlopts$itau,imx=ssamk$remlopts$iter,tol=ssamk$remlopts$tol,alg=ssamk$remlalg)
           } else {
             varhat <- remlvc(ssamk$yty,rbind(Kty,crossprod(gammat,Jty)),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,ktj),cbind(t(ktj),crossprod(gammat,JtJ)%*%gammat)),
                              ssamk$ZtZy[[2]],rbind(XtZ[1:nbf,],crossprod(gammat,XtZ[(nbf+1):(nbf+cbf),])),ssamk$n[2]-ssamk$nknots,rdm=ssamk$ZtZy[[3]],
-                             tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+                             tau=ssamk$remlopts$itau,imx=ssamk$remlopts$iter,tol=ssamk$remlopts$tol,alg=ssamk$remlalg)
           }
           rm(ktj)
+          
         } else {
-          if(length(ssamk$lev1var)==1L){
+          if(length(ssamk$ZtZy$rdm)==1L){
             varhat <- remlri(ssamk$yty,rbind(Kty,Jty),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
-                             ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+                             ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,tau=ssamk$remlopts$itau,imx=ssamk$remlopts$iter,tol=ssamk$remlopts$tol,alg=ssamk$remlalg)
           } else{
             varhat <- remlvc(ssamk$yty,rbind(Kty,Jty),matrix(ssamk$ZtZy[[1]]),rbind(cbind(KtK,KtJ),cbind(t(KtJ),JtJ)),
-                             ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,rdm=ssamk$ZtZy[[3]],tau=ssamk$remlopts$itau,imx=ssamk$remlopts$maxit,tol=ssamk$remlopts$rtol,alg=ssamk$remlalg)
+                             ssamk$ZtZy[[2]],XtZ,ssamk$n[2]-ssamk$nknots,rdm=ssamk$ZtZy[[3]],tau=ssamk$remlopts$itau,imx=ssamk$remlopts$iter,tol=ssamk$remlopts$tol,alg=ssamk$remlalg)
           }
         }
         tau <- varhat$tau
-        remlinfo <- varhat[3:4]
+        remlinfo <- varhat[3:5]
         if(!varhat$cnvg){warning("REML estimation algorithm failed to converge. \nTry a different algorithm (remlalg) or change REML estimation options (remlopts).")}
       } else {
         tau <- ssamk$remlopts$itau
         remlinfo <- NULL
       }
       nvc <- ssamk$ZtZy[[3]]
-      if(length(ssamk$lev1var)>1L){names(tau) <- levels(ssamk$lev2var)}
+      names(tau) <- names(ssamk$ZtZy$rdm)
       
       # check for negative variance components
       if(any(tau<=0)){
@@ -137,26 +138,46 @@ ssawork <-
         warning("REML estimation produced variance component estimates <= 0. \nOffending variance components are set to 10^-4 for estimation.")
       }
       
-      # redefine crossproducts
-      csqrt <- (ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))^(-0.5)
-      XtZc <- XtZ*rep(csqrt,each=(nbf+cbf))
+      # redefine crossproducts (part 1)
+      if(is.matrix(ssamk$ZtZy[[2]])){
+        # ZtZ is NOT diagonal (stored as matrix)
+        csqrt <- pinvsm(ssamk$ZtZy[[2]]+diag(rep(1/tau,times=nvc)), iconst=-0.5)
+        XtZc <- XtZ%*%csqrt
+        if(nbf>1L) {
+          Kty <- (Kty-(XtZc[1:nbf,])%*%(csqrt%*%ssamk$ZtZy[[1]]))
+        } else {
+          Kty <- (Kty-matrix(XtZc[1:nbf,],nbf,ncol(XtZc))%*%(csqrt%*%ssamk$ZtZy[[1]]))
+        }
+        Jty <- (Jty-(XtZc[(nbf+1):(nbf+cbf),])%*%(csqrt%*%ssamk$ZtZy[[1]]))
+        ssamk$yty <- (ssamk$yty-crossprod(csqrt%*%ssamk$ZtZy[[1]]))
+      } else {
+        # ZtZ is diagonal (stored as vector)
+        csqrt <- (ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))^(-0.5)
+        XtZc <- XtZ*rep(csqrt,each=(nbf+cbf))
+        if(nbf>1L) {
+          Kty <- (Kty-(XtZc[1:nbf,])%*%(ssamk$ZtZy[[1]]*csqrt))
+        } else {
+          Kty <- (Kty-matrix(XtZc[1:nbf,],nbf,ncol(XtZc))%*%(ssamk$ZtZy[[1]]*csqrt))
+        }
+        Jty <- (Jty-(XtZc[(nbf+1):(nbf+cbf),])%*%(ssamk$ZtZy[[1]]*csqrt))
+        ssamk$yty <- (ssamk$yty-crossprod(ssamk$ZtZy[[1]]*csqrt))
+      } # end if(is.matrix(ssamk$ZtZy[[2]]))
+      
+      # redefine crossproducts (part 2)
       if(nbf>1L){
         KtK <- (KtK-tcrossprod(XtZc[1:nbf,]))
         KtJ <- (KtJ-tcrossprod(XtZc[1:nbf,],XtZc[(nbf+1):(nbf+cbf),]))
-        Kty <- (Kty-(XtZc[1:nbf,])%*%(ssamk$ZtZy[[1]]*csqrt))
       } else {
-        nxtz=ncol(XtZc)
+        nxtz <- ncol(XtZc)
         KtK <- (KtK-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz)))
         KtJ <- (KtJ-tcrossprod(matrix(XtZc[1:nbf,],nbf,nxtz),XtZc[(nbf+1):(nbf+cbf),]))
-        Kty <- (Kty-matrix(XtZc[1:nbf,],nbf,nxtz)%*%(ssamk$ZtZy[[1]]*csqrt))
       }
       JtJ <- (JtJ-tcrossprod(XtZc[(nbf+1):(nbf+cbf),]))
-      Jty <- (Jty-(XtZc[(nbf+1):(nbf+cbf),])%*%(ssamk$ZtZy[[1]]*csqrt))
-      ssamk$yty <- (ssamk$yty-crossprod(ssamk$ZtZy[[1]]*csqrt))
       
     } else {
       tau <- remlinfo <- NULL
-    }
+    } # end if(!is.null(ssamk$random))
+    
     
     ### initialize smoothing parameters
     nbf <- length(Kty)
@@ -295,7 +316,13 @@ ssawork <-
     
     ### calculate vaf
     mval <- ssamk$ysm/ssamk$n[2]
-    if(!is.null(ssamk$random)){mval <- sum(sqrt(1-(ssamk$ZtZy[[2]]/(ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))))*ssamk$ZtZy[[1]])/ssamk$n[2]}
+    if(!is.null(ssamk$random)){
+      if(is.matrix(ssamk$ZtZy[[2]])){
+        mval <- NA
+      } else{
+        mval <- sum(sqrt(1-(ssamk$ZtZy[[2]]/(ssamk$ZtZy[[2]]+rep(1/tau,times=nvc))))*ssamk$ZtZy[[1]])/ssamk$n[2]
+      }
+    }
     vaf <- 1-sseval/(ssamk$yty-ssamk$n[2]*(mval^2))
     
     ### retransform predictors

@@ -1,29 +1,43 @@
+Changes from ver 1.0-6 to ver 1.0-7     [Aug-09-2015]
+   1) bigsplines-package
+	*   Many more options for random effects
+	*   Improvements to REML algorithms
+	*   Changes in default REML options and syntax
+	*   Updated some references throughout
+   2) bigssa and makessa
+	*   Many more options for random effects
+	*   Changes in default REML options and syntax
+   3) bigssp and makessp
+	*   Many more options for random effects
+	*   Changes in default REML options and syntax
+
+
 Changes from ver 1.0-5 to ver 1.0-6     [Mar-16-2015]
    1) bigsplines-package
 	*   Improvements to imagebar (more customization options)
 	*   Improvements to all prediction functions (more options)
 	*   Minor improvements to internals of all functions
    2) imagebar
-	*   New input `zline’ to control z-label placement
-	*   New input `pltimage’ to control image plt (see par)
-	*   New input `pltbar’ to control colorbar plt (see par)
+	*   New input 'zline' to control z-label placement
+	*   New input 'pltimage' to control image plt (see par)
+	*   New input 'pltbar' to control colorbar plt (see par)
 	*   Reduced default number of colors to 21 (instead of 100)
 	*   Slight modification to default colors
    3) predict.bigspline
-	*   New input `design’ to return design matrix
-	*   New input `smoothMatrix’ to return smoothing matrix
+	*   New input 'design' to return design matrix
+	*   New input 'smoothMatrix' to return smoothing matrix
    4) predict.bigssa
-	*   New input `design’ to return design matrix
-	*   New input `smoothMatrix’ to return smoothing matrix
+	*   New input 'design' to return design matrix
+	*   New input 'smoothMatrix' to return smoothing matrix
    5) predict.bigssg
-	*   New input `design’ to return design matrix
-	*   New input `smoothMatrix’ to return smoothing matrix
+	*   New input 'design' to return design matrix
+	*   New input 'smoothMatrix' to return smoothing matrix
    6) predict.bigssp
-	*   New input `design’ to return design matrix
-	*   New input `smoothMatrix’ to return smoothing matrix
+	*   New input 'design' to return design matrix
+	*   New input 'smoothMatrix' to return smoothing matrix
    7) predict.bigtps
-	*   New input `design’ to return design matrix
-	*   New input `smoothMatrix’ to return smoothing matrix
+	*   New input 'design' to return design matrix
+	*   New input 'smoothMatrix' to return smoothing matrix
 
 
 Changes from ver 1.0-4 to ver 1.0-5     [Feb-11-2015]
@@ -33,22 +47,22 @@ Changes from ver 1.0-4 to ver 1.0-5     [Feb-11-2015]
 	*   Major changes/improvements to bigssg function.
 	*   Updated some references throughout.
    2) bigspline (and corresponding predict, print, and summary functions)
-	*   Changed class of output object (from class “css” to class “bigspline”)
+	*   Changed class of output object (from class 'css' to class 'bigspline')
    3) bigssa (and corresponding predict, print, and summary functions)
-	*   For unidimensional predictor, assumes type=“cub” as default.
-	*   Changed class of output object (from class “ssa” to class “bigssa”)
+	*   For unidimensional predictor, assumes type='cub' as default.
+	*   Changed class of output object (from class 'ssa' to class 'bigssa')
 	*   Added support for simple random effects/intercepts.
    4) bigssp (and corresponding predict, print, and summary functions)
-	*   For unidimensional predictor, assumes type=“cub” as default.
-	*   Changed class of output object (from class “ssp” to class “bigssp”)
+	*   For unidimensional predictor, assumes type='cub' as default.
+	*   Changed class of output object (from class 'ssp' to class 'bigssp')
 	*   Added support for simple random effects/intercepts.
    5) bigtps (and corresponding predict, print, and summary functions)
-	*   Changed class of output object (from class “tps” to class “bigtps”)
+	*   Changed class of output object (from class 'tps' to class 'bigtps')
    6) imagebar
 	*   Restores original par on exit (so subsequent plots appear correctly).
    7) bigssg (and corresponding predict, print, and summary functions)
-	*   For unidimensional predictor, assumes type=“cub” as default.
-	*   Changed class of output objects (from class “ssg” to class “bigssg”)
+	*   For unidimensional predictor, assumes type='cub' as default.
+	*   Changed class of output objects (from class 'ssg' to class 'bigssg')
 	*   More options for smoothing parameter selection (see input gcvtype).
 	*   Changed default smoothing parameter selection method to "acv".
 	*   Bug fix when using skip.iter=FALSE (early termination of iterative update).

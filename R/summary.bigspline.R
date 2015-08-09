@@ -9,7 +9,7 @@ summary.bigspline <-
         chunksize <- as.integer(chunksize[1])
         if(chunksize<1L){stop("Input 'chunksize' must be positive integer.")}
         if(chunksize>=ndpts){
-          yhat <- predict(object)
+          yhat <- predict.bigspline(object)
         } else {
           xseq <- seq.int(1L,ndpts,by=chunksize)
           lenx <- length(xseq)
@@ -22,7 +22,7 @@ summary.bigspline <-
           yhat <- NULL
           for(mm in 1:(lenx-1)){
             chunkidx <- (xseq[mm]:(xseq[mm+1]-1))
-            yhat <- c(yhat,predict(object,newdata=object$x[chunkidx]))
+            yhat <- c(yhat,predict.bigspline(object,newdata=object$x[chunkidx]))
           } # end for(mm in 1:(lenx-1))
         } # end if(chunksize>=ndpts)
       } # end if(is.na(object$rparm[1]))

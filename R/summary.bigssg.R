@@ -10,7 +10,7 @@ summary.bigssg <-
         chunksize <- as.integer(chunksize[1])
         if(chunksize<1L){stop("Input 'chunksize' must be positive integer.")}
         if(chunksize>=ndpts){
-          yhat <- predict(object)
+          yhat <- predict.bigssg(object)
         } else {
           xseq <- seq.int(1L,ndpts,by=chunksize)
           lenx <- length(xseq)
@@ -28,7 +28,7 @@ summary.bigssg <-
           for(mm in 1:(lenx-1)){
             chunkidx <- (xseq[mm]:(xseq[mm+1]-1))
             for(k in 1:nxvar){newdata[[k]] <- object$xvars[[k]][chunkidx,]}
-            ynew <- predict(object,newdata)
+            ynew <- predict.bigssg(object,newdata)
             yhat$fitted.values <- c(yhat$fitted.values,ynew$fitted.values)
             yhat$linear.predictors <- c(yhat$linear.predictors,ynew$linear.predictors)
           } # end for(mm in 1:(lenx-1))

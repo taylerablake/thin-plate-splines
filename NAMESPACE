@@ -22,3 +22,19 @@ S3method(summary, bigssa)
 S3method(summary, bigssg)
 S3method(summary, bigssp)
 S3method(summary, bigtps)
+
+importFrom(stats, nlm)
+importFrom(grDevices, colorRampPalette)
+importFrom(graphics, par)
+importFrom(graphics, image)
+importFrom(graphics, plot)
+importFrom(graphics, axis)
+importFrom(graphics, mtext)
+importFrom(graphics, rect)
+importFrom(stats, model.response)
+importFrom(stats, as.formula)
+importFrom(stats, terms.formula)
+importFrom(stats, quantile)
+
+
+

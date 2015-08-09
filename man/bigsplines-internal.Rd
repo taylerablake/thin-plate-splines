@@ -10,6 +10,7 @@
 \alias{gcvssa}
 \alias{gcvssg}
 \alias{gcvssp}
+\alias{getRandom}
 \alias{lamcoef}
 \alias{lamcoefg}
 \alias{lamloop}

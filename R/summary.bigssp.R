@@ -9,7 +9,7 @@ summary.bigssp <-
         chunksize <- as.integer(chunksize[1])
         if(chunksize<1L){stop("Input 'chunksize' must be positive integer.")}
         if(chunksize>=ndpts){
-          yhat <- predict(object)
+          yhat <- predict.bigssp(object)
         } else {
           xseq <- seq.int(1L,ndpts,by=chunksize)
           lenx <- length(xseq)
@@ -26,7 +26,7 @@ summary.bigssp <-
           for(mm in 1:(lenx-1)){
             chunkidx <- (xseq[mm]:(xseq[mm+1]-1))
             for(k in 1:nxvar){newdata[[k]] <- object$xvars[[k]][chunkidx,]}
-            yhat <- c(yhat,predict(object,newdata))
+            yhat <- c(yhat,predict.bigssp(object,newdata))
           } # end for(mm in 1:(lenx-1))
         } # end if(chunksize>=ndpts)
       } # end if(is.na(object$modelspec$rparm[1]))

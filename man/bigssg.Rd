@@ -93,9 +93,9 @@ Cross-validation criterion for selecting smoothing parameters (see Details).
   
   Helwig, N. E. (in preparation). Nonparametric exponential family regression for ultra large samples: Scalable computation via rounding parameters. 
 	
-	Helwig, N. E. and Ma, P. (in press). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
   
-  Helwig, N. E. and Ma, P. (in revision). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
   
@@ -153,7 +153,7 @@ Note that this function uses the efficient SSA reparameterization described in H
 }
 
 \section{Skip Iteration }{
-For \eqn{p>1} predictors, initial values for the \eqn{\gamma_{j}} parameters (that determine the structure of the \eqn{\theta_{k}} parameters) are estimated using an extension of the smart starting algorithm described in Helwig (2013) and Helwig and Ma (in press). 
+For \eqn{p>1} predictors, initial values for the \eqn{\gamma_{j}} parameters (that determine the structure of the \eqn{\theta_{k}} parameters) are estimated using an extension of the smart starting algorithm described in Helwig (2013) and Helwig and Ma (2015). 
 
 Default use of this function (\code{skip.iter=TRUE}) fixes the \eqn{\gamma_{j}} parameters afer the smart start, and then finds the global smoothing parameter \eqn{\lambda} (among the input \code{lambdas}) that minimizes the GCV score. This approach typically produces a solution very similar to the more optimal solution using \code{skip.iter=FALSE}.
 
@@ -232,6 +232,7 @@ gmod <- bigssg(y~x,family="negbin",type="cub",nknots=20)
 1/gmod$dispersion   ## dispersion = 1/size
 crossprod( lp - gmod$linear.predictor )/length(lp)
 
+\dontrun{
 
 ##########   EXAMPLE 2 (2-way GSSA)   ##########
 
@@ -305,6 +306,7 @@ y <- rnbinom(n=ndpts,size=.5,mu=mu)
 gmod <- bigssg(y~x1v*x2v,family="negbin",type=list(x1v="cub",x2v="cub"),nknots=50)
 1/gmod$dispersion   ## dispersion = 1/size
 crossprod( lp - gmod$linear.predictor )/length(lp)
+}
 
 }
 
