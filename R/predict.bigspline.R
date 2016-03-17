@@ -2,9 +2,9 @@ predict.bigspline <-
   function(object,newdata=NULL,se.fit=FALSE,
            effect=c("all","0","lin","non"),
            design=FALSE,smoothMatrix=FALSE,...) {
-    ###### Predicts for class "css" objects
+    ###### Predicts for class "bigspline" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: March 10, 2015
+    ###### Last modified: January 20, 2016
     
     ### check newdata
     effect <- effect[1]
@@ -59,6 +59,19 @@ predict.bigspline <-
                           matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
         cidx <- 2:(nknots+1)
       } else {stop("There is no linear effect for periodic splines.")}
+    } else if(object$type=="lin"){
+      newdata <- (newdata-object$xrng[1])/(object$xrng[2]-object$xrng[1])
+      if(effect=="all"){
+        Kmat <- matrix(1,nunewr)
+        Jmat <- (.Fortran("linker",newdata,object$myknots,nunewr,nknots,
+                          matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
+        cidx <- 1:(nknots+1)
+      } else if(effect=="non"){
+        Kmat <- NULL
+        Jmat <- (.Fortran("linker",newdata,object$myknots,nunewr,nknots,
+                          matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
+        cidx <- 2:(nknots+1)
+      } else {stop("There is no linear effect for linear splines.")}
     } else {
       if(effect=="all"){
         Kmat <- cbind(1,newdata)

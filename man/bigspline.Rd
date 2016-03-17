@@ -1,7 +1,7 @@
 \name{bigspline}
 \alias{bigspline}
 \title{
-Fits Cubic Smoothing Splines
+Fits Smoothing Spline
 }
 \description{
 Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}} and a real-valued predictor vector \eqn{\mathbf{x}=\{x_{i}\}_{n\times 1}} with \eqn{a \leq x_{i} \leq b \ \forall i}, a smoothing spline model has the form \deqn{y_{i}=\eta(x_{i})+e_{i}} where \eqn{y_{i}} is the \eqn{i}-th observation's respone, \eqn{x_{i}} is the \eqn{i}-th observation's predictor, \eqn{\eta} is an unknown smooth function relating the response and predictor, and \eqn{e_{i}\sim\mathrm{N}(0,\sigma^{2})} is iid Gaussian error.
@@ -19,7 +19,7 @@ bigspline(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
   Response vector. Must be same length as \code{x}.
 }
   \item{type}{
-	Type of spline for \code{x}. Options include \code{type="cub"} for cubic, \code{type="cub0"} for different cubic, and \code{type="per"} for cubic periodic. See Spline Types section.
+	Type of spline for \code{x}. Options include \code{type="lin"} for linear, \code{type="cub"} for cubic, \code{type="cub0"} for different cubic, and \code{type="per"} for cubic periodic. See Spline Types section.
 }
   \item{nknots}{
 	Scalar giving maximum number of knots to bin-sample. Use more knots for more jagged functions.
@@ -79,14 +79,12 @@ If \code{TRUE}, only unique knots are used (for stability).
   Gu, C. (2013). \emph{Smoothing spline ANOVA models, 2nd edition}. New York: Springer.
 
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
-	
-	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+	  
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics, 24}, 715-732.
   
   Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
 	
   Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
-  
-  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -119,8 +117,11 @@ Given the optimal coefficients, the fitted values are given by \eqn{\hat{\mathbf
 
 }
 \section{Spline Types }{
+  For a linear spline (\code{type="lin"}) with \eqn{x \in [0,1]}, the needed functions are 
+\deqn{ \phi_{1}(x) = 0 \qquad \mbox{and} \qquad \rho(x,z) = k_{1}(x)k_{1}(z)+k_{2}(|x-z|)} where \eqn{k_{1}(x)=x-0.5}, \eqn{k_{2}(x)=\frac{1}{2}\left(k_{1}^{2}(x) - \frac{1}{12} \right)}; in this case \eqn{\mathbf{K}=\mathbf{1}_{n}} and \eqn{\mathbf{d}=d_{0}}.
+  
   For a cubic spline (\code{type="cub"}) with \eqn{x \in [0,1]}, the needed functions are 
-\deqn{ \phi_{1}(x) = k_{1}(x) \qquad \mbox{and} \qquad \rho(x,z) =  k_{2}(x)k_{2}(z)-k_{4}(|x-z|)} where \eqn{k_{1}(x)=x-0.5}, \eqn{k_{2}(x)=\frac{1}{2}\left(k_{1}^{2}(x) - \frac{1}{12} \right)}, and \eqn{k_{4}(x)=\frac{1}{24}\left(k_{1}^{4}(x) - \frac{k_{1}^{2}(x)}{2} + \frac{7}{240} \right)}. 
+\deqn{ \phi_{1}(x) = k_{1}(x) \qquad \mbox{and} \qquad \rho(x,z) =  k_{2}(x)k_{2}(z)-k_{4}(|x-z|)} where \eqn{k_{1}} and \eqn{k_{2}} are defined above, and \eqn{k_{4}(x)=\frac{1}{24}\left(k_{1}^{4}(x) - \frac{k_{1}^{2}(x)}{2} + \frac{7}{240} \right)}. 
   
   For a different cubic spline (\code{type="cub0"}) with \eqn{x \in [0,1]}, the needed functions are \deqn{ \phi_{1}(x) = x \qquad \mbox{and} \qquad \rho(x,z) = (x \wedge z)^2[3(x \vee z) - (x \wedge z)]/6}
 where \eqn{(x \wedge z) = \min(x,z)} and \eqn{(x \vee z) = \max(x,z)}. 
@@ -145,7 +146,9 @@ myfun <- function(x){ sin(2*pi*x) }
 x <- runif(10^6)
 y <- myfun(x) + rnorm(10^6)
 
-# cubic, different cubic, and periodic splines
+# linear, cubic, different cubic, and periodic splines
+linmod <- bigspline(x,y,type="lin")
+linmod
 cubmod <- bigspline(x,y)
 cubmod
 cub0mod <- bigspline(x,y,type="cub0")

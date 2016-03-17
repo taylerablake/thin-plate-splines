@@ -169,6 +169,12 @@ makessg <-
         }
         if(!is.na(rparm[1])){xrng[[k]] <- apply(xvars[[k]],2,range)}
         flvls[[k]] <- NA
+      } else if (type[[k]]=="ord"){
+        xvars[[k]] <- factor(xvars[[k]],ordered=TRUE)
+        flvls[[k]] <- levels(xvars[[k]])
+        xvars[[k]] <- matrix(as.integer(xvars[[k]]))
+        xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
+        xdim[k] <- 1L
       } else if (type[[k]]=="nom"){
         xvars[[k]] <- as.factor(xvars[[k]])
         flvls[[k]] <- levels(xvars[[k]])
@@ -225,6 +231,9 @@ makessg <-
       kconst <- 1
       for(k in 1:nxvar){
         if(type[[k]]=="nom"){
+          gvec <- gvec + kconst*(xvars[[k]]-1L)
+          kconst <- kconst*xrng[[k]][2]
+        } else if(type[[k]]=="ord"){
           gvec <- gvec + kconst*(xvars[[k]]-1L)
           kconst <- kconst*xrng[[k]][2]
         } else if(type[[k]]=="tps"){

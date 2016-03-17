@@ -2,9 +2,9 @@ bigspline <-
   function(x,y,type="cub",nknots=30,rparm=0.01,xmin=min(x),
            xmax=max(x),alpha=1,lambdas=NULL,se.fit=FALSE,
            rseed=1234,knotcheck=TRUE){
-    ###### Fits Cubic Smoothing Spline
+    ###### Fits Smoothing Spline
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: March 10, 2015
+    ###### Last modified: January 14, 2016
     
     ### initial info
     if(!is.null(rseed)){set.seed(rseed)}
@@ -19,7 +19,7 @@ bigspline <-
     nknots <- as.integer(nknots[1])
     if(nknots < 1L){stop("Input 'nknots' must be positive integer.")}
     type <- type[1]
-    if(!any(type==c("cub","cub0","per"))){stop("Must set type to 'cub', 'cub0', or 'per'.")}
+    if(!any(type==c("cub","cub0","per","lin"))){stop("Must set type to 'cub', 'cub0', 'per', or 'lin'.")}
     
     ### check inputs and transform data
     if(nx > 1){stop("Too many predictors. Use another function (bigssa or bigssp).")}
@@ -78,6 +78,13 @@ bigspline <-
       Jmat <- (.Fortran("perker",x,theknots,nunewr,nknots,
                         matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
       Qmat <- (.Fortran("perkersym",theknots,nknots,
+                        matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[3]]
+    } else if(type=="lin"){
+      Kmat <- matrix(1,nunewr)
+      nbf <- 1L
+      Jmat <- (.Fortran("linker",x,theknots,nunewr,nknots,
+                        matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
+      Qmat <- (.Fortran("linkersym",theknots,nknots,
                         matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[3]]
     } else {
       Kmat <- cbind(1,x)

@@ -10,7 +10,7 @@ Given a real-valued response vector \eqn{\mathbf{y}=\{y_{i}\}_{n\times1}}, a sem
 bigssp(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
        lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
        gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL,
-       random=NULL,remlalg=c("FS","EM","none"),remliter=500,
+       random=NULL,remlalg=c("FS","NR","EM","none"),remliter=500,
        remltol=10^-4,remltau=NULL)
 }
 \arguments{
@@ -21,7 +21,7 @@ bigssp(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
   Optional data frame, list, or environment containing the variables in \code{formula}. Or an object of class "makessp", which is output from \code{\link{makessp}}.
 }
   \item{type}{
-	List of smoothing spline types for predictors in \code{formula} (see Details). Options include \code{type="cub"} for cubic, \code{type="cub0"} for another cubic, \code{type="per"} for cubic periodic, \code{type="tps"} for cubic thin-plate, and \code{type="nom"} for nominal. Use \code{type="prm"} for parametric effect.
+	List of smoothing spline types for predictors in \code{formula} (see Details). Options include \code{type="cub"} for cubic, \code{type="cub0"} for another cubic, \code{type="per"} for cubic periodic, \code{type="tps"} for cubic thin-plate, \code{type="ord"} for ordinal, and \code{type="nom"} for nominal. Use \code{type="prm"} for parametric effect.
 }
   \item{nknots}{
 	Two possible options: (a) scalar giving total number of random knots to sample, or (b) vector indexing which rows of \code{data} to use as knots.
@@ -74,7 +74,7 @@ Initial estimate of variance parameters for REML estimation of variance componen
  
  See \code{\link{bigspline}} for definitions of \code{type="cub"}, \code{type="cub0"}, and \code{type="per"} splines, which can handle one-dimensional predictors. See Appendix of Helwig and Ma (2015) for information about \code{type="tps"} and \code{type="nom"} splines. Note that \code{type="tps"} can handle one-, two-, or three-dimensional predictors. I recommend using \code{type="cub"} if the predictor scores have no extreme outliers; when outliers are present, \code{type="tps"} may produce a better result. 
   
- Using the rounding parameter input \code{rparm} can greatly speed-up and stabilize the fitting for large samples. For typical cases, I recommend using \code{rparm=0.01} for cubic and periodic splines, but smaller rounding parameters may be needed for particularly jagged functions. For thin-plate splines, the data are NOT transformed to the interval [0,1] before fitting, so the rounding parameter should be on the raw data scale. Also, for \code{type="tps"} you can enter one rounding parameter for each predictor dimension. Use \code{rparm=1} for nominal splines.
+ Using the rounding parameter input \code{rparm} can greatly speed-up and stabilize the fitting for large samples. For typical cases, I recommend using \code{rparm=0.01} for cubic and periodic splines, but smaller rounding parameters may be needed for particularly jagged functions. For thin-plate splines, the data are NOT transformed to the interval [0,1] before fitting, so the rounding parameter should be on the raw data scale. Also, for \code{type="tps"} you can enter one rounding parameter for each predictor dimension. Use \code{rparm=1} for ordinal and nominal splines.
 }
 \value{
 	\item{fitted.values}{Vector of fitted values corresponding to the original data points in \code{xvars} (if \code{rparm=NA}) or the rounded data points in \code{xunique} (if \code{rparm} is used).}
@@ -98,15 +98,15 @@ Initial estimate of variance parameters for REML estimation of variance componen
 \references{
   Gu, C. (2013). \emph{Smoothing spline ANOVA models, 2nd edition}. New York: Springer.
 
+  Gu, C. and Wahba, G. (1991). Minimizing GCV/GML scores with multiple smoothing parameters via the Newton method. \emph{SIAM Journal on Scientific and Statistical Computing, 12}, 383-398.
+
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 	
-	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics}.
+  Helwig, N. E. (in press). Efficient estimation of variance components in nonparametric mixed-effects models with large samples. \emph{Statistics and Computing}.
+  
+	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics, 24}, 715-732.
   
   Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
-	
-  Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
-  
-  Helwig, N. E. and Ma, P. (in preparation). Optimal eigenbasis truncation for thin-plate regression splines. 
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
@@ -126,7 +126,7 @@ Nathaniel E. Helwig <helwig@umn.edu>
   The penalized least squares functioncal can be rewritten as \deqn{ \|\mathbf{y} - \mathbf{K}\mathbf{d} - \mathbf{J}_{\theta}\mathbf{c}\|^{2} + n\lambda\mathbf{c}'\mathbf{Q}_{\theta}\mathbf{c} }
 where \eqn{\mathbf{K}=\{\phi(x_{i}),\mathbf{z}_{i}\}_{n \times m}} is the parametric space basis function matrix, \eqn{\mathbf{J}_{\theta}=\sum_{k=1}^{s}\theta_{k}\mathbf{J}_{k}} with \eqn{\mathbf{J}_{k}=\{\rho_{k}(\mathbf{x}_{i},\mathbf{x}_{h}^{*})\}_{n \times q}} denoting the \eqn{k}-th contrast space basis funciton matrix, \eqn{\mathbf{Q}_{\theta}=\sum_{k=1}^{s}\theta_{k}\mathbf{Q}_{k}} with \eqn{\mathbf{Q}_{k}=\{\rho_{k}(\mathbf{x}_{g}^{*},\mathbf{x}_{h}^{*})\}_{q \times q}} denoting the \eqn{k}-th penalty matrix, and \eqn{\mathbf{d}=(d_{0},\ldots,d_{m})'} and \eqn{\mathbf{c}=(c_{1},\ldots,c_{q})'} are the unknown basis function coefficients. The optimal smoothing parameters are chosen by minimizing the GCV score (see \code{\link{bigspline}}). 
 
-Note that this function uses the classic smoothing spline parameterization (see Gu, 2013), so there is more than one smoothing parameter per predictor (if interactions are included in the model). To evaluate the GCV score, this function uses the improved (scalable) SSA algorithm discussed in Helwig (2013) and Helwig and Ma (in press).
+Note that this function uses the classic smoothing spline parameterization (see Gu, 2013), so there is more than one smoothing parameter per predictor (if interactions are included in the model). To evaluate the GCV score, this function uses the improved (scalable) SSA algorithm discussed in Helwig (2013) and Helwig and Ma (2015).
 }
 
 \section{Skip Iteration }{
@@ -142,7 +142,7 @@ The input \code{random} adds random effects to the model assuming a variance com
 
 Random effects are distinguished by vertical bars ("|"), which separate expressions for design matrices (left) from group factors (right). For example, the syntax \code{~1|group} includes a random intercept for each level of \code{group}, whereas the syntax \code{~1+x|group} includes both a random intercept and a random slope for each level of \code{group}. For crossed random effects, parentheses are needed to distinguish different terms, e.g., \code{~(1|group1)+(1|group2)} includes a random intercept for each level of \code{group1} and a random intercept for each level of \code{group2}, where both \code{group1} and \code{group2} are factors. For nested random effects, the syntax \code{~group|subject} can be used, where both \code{group} and \code{subject} are factors such that the levels of \code{subject} are nested within those of \code{group}.
 
-The input \code{remlalg} determines the REML algorithm used to estimate the variance components. Setting \code{remlalg="FS"} uses a Fisher Scoring algorithm (default). Setting \code{remlalg="EM"} uses an Expectation Maximization algorithm. Use \code{remlalg="none"} to fit a model with known variance components (entered through \code{remltau}).
+The input \code{remlalg} determines the REML algorithm used to estimate the variance components. Setting \code{remlalg="FS"} uses a Fisher Scoring algorithm (default). Setting \code{remlalg="NR"} uses a Newton-Raphson algorithm. Setting \code{remlalg="EM"} uses an Expectation Maximization algorithm. Use \code{remlalg="none"} to fit a model with known variance components (entered through \code{remltau}).
 
 The input \code{remliter} sets the maximum number of iterations for the REML estimation. The input \code{remltol} sets the convergence tolerance for the REML estimation, which is determined via relative change in the REML log-likelihood. The input \code{remltau} sets the initial estimates of variance parameters; default is \code{remltau = rep(1,ntau)} where \code{ntau} is the number of variance components.
 }

@@ -1,3 +1,30 @@
+Changes from ver 1.0-7 to ver 1.0-8     [Mar-17-2016]
+   1) bigsplines-package
+	*   Added functionality for ordinal predictors (type="ord")
+	*   More options for bigspline function (linear splines)
+	*   More options for estimating variance components
+	*   Improvements to imagebar function
+	*   Updated some references throughout
+	*   Bug fix for cub0 kernel predictions (when x not in [0,1])
+   2) bigspline
+	*   Added type="lin"" option for linear smoothing spline
+   3) bigssa and makessa
+	*   Added type="ord" option for ordinal predictors
+	*   Added Newton-Raphson option for variance component estimation
+	*   Bug fix for cub0 kernel predictions (when x not in [0,1])
+	*   Changes/improvements to Example #3 in bigssa help file 
+   4) bigssg and makessg
+	*   Added type="ord" option for ordinal predictors
+	*   Bug fix for cub0 kernel predictions (when x not in [0,1])
+   5) bigssp and makessp
+	*   Added type="ord" option for ordinal predictors
+	*   Added Newton-Raphson option for variance component estimation
+	*   Bug fix for cub0 kernel predictions (when x not in [0,1])
+   6) imagebar
+	*   Changes to internals when drawbar=TRUE
+	*   Now possible to add points/lines to image
+
+
 Changes from ver 1.0-6 to ver 1.0-7     [Aug-09-2015]
    1) bigsplines-package
 	*   Many more options for random effects

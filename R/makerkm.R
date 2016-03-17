@@ -71,12 +71,19 @@ makerkm <-
                                  xdim[k],nknots,matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[6]]
             jm[[k]] <- (gconst*jm[[k]]-((PhiX%*%tpsinfo[[k]][[2]])/nknots))%*%tpsinfo[[k]][[3]]
           } # end if(pred==FALSE)
-        } else if(type[[k]]=="nom"){
-          jm[[k]] <- (.Fortran("nomker",as.integer(xvars[[k]]),as.integer(theknots[[k]]),
-                               nunewr,nknots,1/xrng[[k]][2],matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[6]]
+        } else if(type[[k]]=="ord"){
+          jm[[k]] <- (.Fortran("ordker",xvars[[k]],theknots[[k]],nunewr,nknots,as.integer(xrng[[k]][2]),
+                               matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[6]]
           if(pred==FALSE){
-            qm[[k]] <- (.Fortran("nomkersym",as.integer(theknots[[k]]),nknots,
-                                 1/xrng[[k]][2],matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[4]]
+            qm[[k]] <- (.Fortran("ordkersym",theknots[[k]],nknots,as.integer(xrng[[k]][2]),
+                                 matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[4]]
+          }
+        } else if(type[[k]]=="nom"){
+          jm[[k]] <- (.Fortran("nomker",xvars[[k]],theknots[[k]],nunewr,nknots,1/xrng[[k]][2],
+                               matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[6]]
+          if(pred==FALSE){
+            qm[[k]] <- (.Fortran("nomkersym",theknots[[k]],nknots,1/xrng[[k]][2],
+                                 matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[4]]
           }
         } else if(type[[k]]=="cub0"){
           kn[[k]] <- as.matrix(xvars[[k]])

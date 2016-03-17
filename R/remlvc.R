@@ -1,8 +1,8 @@
 remlvc <-
-  function(yty,Xty,Zty,XtX,ZtZ,XtZ,ndf,rdm,tau=rep(1,length(rdm)),imx=100,tol=10^-5,alg=c("FS","EM")){
-    ###### REML Estimation of Variance Components (via Fisher Scoring or EM)
+  function(yty,Xty,Zty,XtX,ZtZ,XtZ,ndf,rdm,tau=rep(1,length(rdm)),imx=100,tol=10^-5,alg=c("FS","NR","EM")){
+    ###### REML Estimation of Variance Components (via Fisher Scoring, Newton-Raphson, or EM)
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: July 30, 2015
+    ###### Last modified: August 9, 2015
     
     ### Inputs: 
     # yty: crossprod(y)
@@ -35,6 +35,8 @@ remlvc <-
     #   tau = c(tau.1, tau.2, ... , tau.r)
     #   e is n by 1 residual vector
     #     note: e ~ N(0,sig*diag(n))
+    
+    #browser(1>0)
     
     ### get initial info
     nre <- length(rdm)
@@ -126,6 +128,70 @@ remlvc <-
         
       } # end while(ival)
       
+    } else if(alg=="NR"){
+      # Newton-Raphson
+      
+      # initialize score and information
+      gvec <- rep(0,nre)
+      hmat <- matrix(0,nre,nre)
+      for(j in 1:nre){
+        idx <- (1+cdm[j]):cdm[j+1]
+        trval <- sum(diag(Dmat[idx,idx]))
+        gval <- (rdm[j]/tau[j])-(trval/(tau[j]^2))
+        gvec[j] <- (-1)*gval+crossprod(beta[idx])/((tau[j]^2)*sig)
+        hmat[j,j] <- 2*(trval/(tau[j]^3)) - (rdm[j]/(tau[j]^2)) - sum(Dmat[idx,idx]^2)/(tau[j]^4)
+        hmat[j,j] <- hmat[j,j] + 2*crossprod(beta[idx])/((tau[j]^3)*sig) - 2*crossprod(beta[idx],Dmat[idx,idx]%*%beta[idx])/((tau[j]^4)*sig)
+        if(j>1){
+          for(k in 1:(j-1)){
+            kidx <- (1+cdm[k]):cdm[k+1]
+            hmat[j,k] <- hmat[k,j] <- (-1)*( sum(Dmat[idx,kidx]^2) + 2*crossprod(beta[idx],Dmat[idx,kidx]%*%beta[kidx])/sig ) / ((tau[j]^2)*(tau[k]^2))
+          }
+        }
+      }
+      
+      # iterative update
+      while(ival) {
+        
+        # update tau parameter estimates
+        tau <- tau + pinvsm(hmat)%*%gvec
+        if(any(tau<=0)) tau[tau<=0] <- 10^-3
+        
+        # update Dmat, sig, and n2LL
+        xeig <- eigen(ZtZX+diag(rep(1/tau,times=rdm)),symmetric=TRUE)
+        nze <- sum(xeig$val>xeig$val[1]*.Machine$double.eps)
+        Dmat <- xeig$vec[,1:nze]%*%((xeig$val[1:nze]^-1)*t(xeig$vec[,1:nze]))
+        Bmat <- XtXiZ%*%Dmat
+        alpha <- (XtXi+Bmat%*%t(XtXiZ))%*%Xty-Bmat%*%Zty
+        beta <- Dmat%*%ZtyX
+        sig <- (yty-t(c(Xty,Zty))%*%c(alpha,beta))/ndf
+        if(sig<=0) sig <- 10^-3
+        n2LLnew <- sum(log(xeig$val[1:nze])) + sum(log(tau)*rdm) + ndf*log(sig)
+        
+        # check for convergence (and update score and information)
+        vtol <- abs((n2LLold-n2LLnew)/n2LLold)
+        iter <- iter + 1L
+        if(vtol>tol && iter<imx){
+          n2LLold <- n2LLnew
+          for(j in 1:nre){
+            idx <- (1+cdm[j]):cdm[j+1]
+            trval <- sum(diag(Dmat[idx,idx]))
+            gval <- (rdm[j]/tau[j])-(trval/(tau[j]^2))
+            gvec[j] <- (-1)*gval+crossprod(beta[idx])/((tau[j]^2)*sig)
+            hmat[j,j] <- 2*(trval/(tau[j]^3)) - (rdm[j]/(tau[j]^2)) - sum(Dmat[idx,idx]^2)/(tau[j]^4)
+            hmat[j,j] <- hmat[j,j] + 2*crossprod(beta[idx])/((tau[j]^3)*sig) - 2*crossprod(beta[idx],Dmat[idx,idx]%*%beta[idx])/((tau[j]^4)*sig)
+            if(j>1){
+              for(k in 1:(j-1)){
+                kidx <- (1+cdm[k]):cdm[k+1]
+                hmat[j,k] <- hmat[k,j] <- (-1)*( sum(Dmat[idx,kidx]^2) + 2*crossprod(beta[idx],Dmat[idx,kidx]%*%beta[kidx])/sig ) / ((tau[j]^2)*(tau[k]^2))
+              }
+            }
+          }
+        } else {
+          ival <- FALSE
+        }
+        
+      } # end while(ival)
+      
     } else {
       # Expectation Maximization
       
@@ -164,6 +230,7 @@ remlvc <-
     } # end if(alg=="FS")
     
     list(tau=as.numeric(tau),sig=as.numeric(sig),iter=iter,
-         cnvg=as.logical(ifelse(vtol>tol,FALSE,TRUE)),vtol=as.numeric(vtol))
+         cnvg=as.logical(ifelse(vtol>tol,FALSE,TRUE)),vtol=as.numeric(vtol),
+         alpha=alpha,beta=beta)
     
   }

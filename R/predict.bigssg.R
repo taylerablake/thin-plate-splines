@@ -4,7 +4,7 @@ predict.bigssg <-
            design=FALSE,smoothMatrix=FALSE,...) {
     ###### Predicts for class "bigssg" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: March 10, 2015
+    ###### Last modified: March 6, 2016
     
     ### check newdata
     effect <- effect[1]
@@ -87,7 +87,7 @@ predict.bigssg <-
         } else {
           fidx <- match(newdata[[k]],object$modelspec$flvls[[k]])
           if(any(is.na(fidx))){stop(paste("Inappropriate 'newdata' for",xnames[k],"(factor levels don't match)."))}
-          newdata[[k]] <- as.matrix(fidx)
+          newdata[[k]] <- as.matrix(as.integer(fidx))
         }
         if(any(object$type[[k]]==c("cub","cub0","per"))){
           newdata[[k]] <- (newdata[[k]]-object$modelspec$xrng[[k]][1])/(object$modelspec$xrng[[k]][2]-object$modelspec$xrng[[k]][1])

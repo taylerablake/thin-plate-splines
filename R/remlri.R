@@ -1,8 +1,8 @@
 remlri <-
-  function(yty,Xty,Zty,XtX,ZtZ,XtZ,ndf,tau=1,imx=100,tol=10^-5,alg=c("FS","EM")){
+  function(yty,Xty,Zty,XtX,ZtZ,XtZ,ndf,tau=1,imx=100,tol=10^-5,alg=c("FS","NR","EM")){
     ###### REML Estimation of Random Intercept (via Fisher Scoring or EM)
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: July 30, 2015
+    ###### Last modified: November 22, 2015
     
     ### Inputs:
     # yty: crossprod(y)
@@ -98,6 +98,47 @@ remlri <-
         
       } # end while(ival)
       
+    } else if(alg=="NR"){
+      # Newton-Raphson
+      
+      # initialize score and information
+      trval <- sum(newval)
+      gg <- (crossprod(beta)/((tau^2)*sig)) - ((nz/tau)-(trval/(tau^2)))
+      hh <- 2*(trval/(tau^3)) - (nz/(tau^2)) + sum(newval^2)/(tau^4)
+      hh <- hh + 2*crossprod(beta)/((tau^3)*sig) - 2*crossprod(beta,Dmat%*%beta)/((tau^4)*sig)
+      
+      # iterative update
+      while(ival) {
+        
+        # update tau parameter estimates
+        tau <- tau + gg/hh
+        if(tau<=0) tau <- 10^-3
+        
+        # update Dmat, sig, and n2LL
+        newval <- 1/(Deig$val+1/tau)
+        Dmat <- Deig$vec%*%tcrossprod(diag(newval),Deig$vec)
+        Bmat <- XtXiZ%*%Dmat
+        alpha <- (XtXi+Bmat%*%t(XtXiZ))%*%Xty - Bmat%*%Zty
+        beta <- Dmat%*%ZtyX
+        sig <- (yty-t(c(Xty,Zty))%*%c(alpha,beta))/ndf
+        if(sig<=0) sig <- 10^-3
+        n2LLnew <- sum(-log(newval)) + sum(log(tau)*nz) + ndf*log(sig)
+        
+        # check for convergence (and update score and information)
+        vtol <- abs((n2LLold-n2LLnew)/n2LLold)
+        iter <- iter + 1L
+        if(vtol>tol && iter<imx){
+          n2LLold <- n2LLnew
+          trval <- sum(newval)
+          gg <- (crossprod(beta)/((tau^2)*sig)) - ((nz/tau)-(trval/(tau^2)))
+          hh <- 2*(trval/(tau^3)) - (nz/(tau^2)) + sum(newval^2)/(tau^4)
+          hh <- hh + 2*crossprod(beta)/((tau^3)*sig) - 2*crossprod(beta,Dmat%*%beta)/((tau^4)*sig)
+        } else {
+          ival <- FALSE
+        }
+        
+      } # end while(ival)
+      
     } else {
       # Expectation Maximization
       
@@ -132,6 +173,7 @@ remlri <-
     } # end if(alg=="FS")
     
     list(tau=as.numeric(tau),sig=as.numeric(sig),iter=iter,
-         cnvg=as.logical(ifelse(vtol>tol,FALSE,TRUE)),vtol=as.numeric(vtol))
+         cnvg=as.logical(ifelse(vtol>tol,FALSE,TRUE)),vtol=as.numeric(vtol),
+         alpha=alpha,beta=beta,logLik=(-0.5)*n2LLnew)
     
   }

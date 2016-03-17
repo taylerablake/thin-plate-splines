@@ -2,11 +2,11 @@ makessa <-
   function(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
            lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
            gcvopts=NULL,knotcheck=TRUE,gammas=NULL,weights=NULL,
-           random=NULL,remlalg=c("FS","EM","none"),remliter=500,
-           remltol=10^-4,remltau=NULL){
+           random=NULL,remlalg=c("FS","NR","EM","none"),
+           remliter=500,remltol=10^-4,remltau=NULL){
     ###### Makes Smoothing Spline Anova models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: July 30, 2015
+    ###### Last modified: October 20, 2015
     
     ### get initial info 
     mf <- match.call()
@@ -39,7 +39,7 @@ makessa <-
     if(!is.null(random)){
       if(class(random)!="formula"){stop("Input 'random' must be a formula.")}
       remlalg <- remlalg[1]
-      if(any(remlalg==c("FS","EM","none"))==FALSE){stop("Input 'remlalg' must be 'FS', 'EM', or 'none'.")}
+      if(any(remlalg==c("FS","NR","EM","none"))==FALSE){stop("Input 'remlalg' must be 'FS', 'NR', 'EM', or 'none'.")}
       remliter <- as.integer(remliter[1])
       if(remliter<1) stop("Input 'remliter' must be a positive integer.")
       remltol <- as.numeric(remltol[1])
@@ -128,6 +128,12 @@ makessa <-
         }
         if(!is.na(rparm[1])){xrng[[k]]=apply(xvars[[k]],2,range)}
         flvls[[k]] <- NA
+      } else if (type[[k]]=="ord"){
+        xvars[[k]] <- factor(xvars[[k]],ordered=TRUE)
+        flvls[[k]] <- levels(xvars[[k]])
+        xvars[[k]] <- matrix(as.integer(xvars[[k]]))
+        xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
+        xdim[k] <- 1L
       } else if (type[[k]]=="nom"){
         xvars[[k]] <- as.factor(xvars[[k]])
         flvls[[k]] <- levels(xvars[[k]])
@@ -135,7 +141,7 @@ makessa <-
         xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
         xdim[k] <- 1L
       } else{
-        stop('You must set type to either "cub", "cub0", "nom", "per", or "tps" for each effect in formula.')
+        stop('You must set type to either "cub", "cub0", "nom", "ord", "per", or "tps" for each effect in formula.')
       }
     } # end for(k in 1:nxvar)
     
@@ -167,7 +173,7 @@ makessa <-
       xorig <- yorig <- NA
     } else{
       # check rparms
-      rpall=NULL
+      rpall <- NULL
       for(k in 1:nxvar){rpall <- c(rpall,rparm[[k]])}
       for(k in 1:length(rpall)){
         rplog <- log(c(rpall[k],rpall[k]/2,rpall[k]/5),base=10)
@@ -183,6 +189,9 @@ makessa <-
       kconst <- 1
       for(k in 1:nxvar){
         if(type[[k]]=="nom"){
+          gvec <- gvec + kconst*(xvars[[k]]-1L)
+          kconst <- kconst*xrng[[k]][2]
+        } else if(type[[k]]=="ord"){
           gvec <- gvec + kconst*(xvars[[k]]-1L)
           kconst <- kconst*xrng[[k]][2]
         } else if(type[[k]]=="tps"){

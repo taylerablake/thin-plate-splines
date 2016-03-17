@@ -343,8 +343,11 @@ ssgwork <-
     
     ### retransform predictors
     for(k in 1:ssgmk$nxvar){
-      if(any(ssgmk$type[[k]]==c("cub","acub","per"))){
+      if(any(ssgmk$type[[k]]==c("cub","cub0","per"))){
         ssgmk$xvars[[k]] <- as.matrix(ssgmk$xvars[[k]]*(ssgmk$xrng[[k]][2]-ssgmk$xrng[[k]][1])+ssgmk$xrng[[k]][1])
+      } else if(ssgmk$type[[k]]=="ord"){
+        ssgmk$xvars[[k]] <- as.matrix(ssgmk$flvls[[k]][ssgmk$xvars[[k]]])
+        if(!is.na(ssgmk$rparm[1])){ssgmk$xorig[[k]] <- as.matrix(ssgmk$flvls[[k]][ssgmk$xorig[[k]]])}
       } else if(ssgmk$type[[k]]=="nom"){
         ssgmk$xvars[[k]] <- as.matrix(ssgmk$flvls[[k]][ssgmk$xvars[[k]]])
         if(!is.na(ssgmk$rparm[1])){ssgmk$xorig[[k]] <- as.matrix(ssgmk$flvls[[k]][ssgmk$xorig[[k]]])}

@@ -2,11 +2,11 @@ makessp <-
   function(formula,data=NULL,type=NULL,nknots=NULL,rparm=NA,
            lambdas=NULL,skip.iter=TRUE,se.fit=FALSE,rseed=1234,
            gcvopts=NULL,knotcheck=TRUE,thetas=NULL,weights=NULL,
-           random=NULL,remlalg=c("FS","EM","none"),remliter=500,
+           random=NULL,remlalg=c("FS","NR","EM","none"),remliter=500,
            remltol=10^-4,remltau=NULL){
     ###### Makes Smoothing Splines with Parametric effects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: July 30, 2015
+    ###### Last modified: October 20, 2015
     
     ### get initial info 
     mf <- match.call()
@@ -39,7 +39,7 @@ makessp <-
     if(!is.null(random)){
       if(class(random)!="formula"){stop("Input 'random' must be a formula.")}
       remlalg <- remlalg[1]
-      if(!any(remlalg==c("FS","EM","none"))){stop("Input 'remlalg' must be 'FS', 'EM', or 'none'.")}
+      if(any(remlalg==c("FS","NR","EM","none"))==FALSE){stop("Input 'remlalg' must be 'FS', 'NR', 'EM', or 'none'.")}
       remliter <- as.integer(remliter[1])
       if(remliter<1) stop("Input 'remliter' must be a positive integer.")
       remltol <- as.numeric(remltol[1])
@@ -121,6 +121,12 @@ makessp <-
         }
         if(!is.na(rparm[1])){xrng[[k]]=apply(xvars[[k]],2,range)}
         flvls[[k]] <- NA
+      } else if (type[[k]]=="ord"){
+        xvars[[k]] <- factor(xvars[[k]],ordered=TRUE)
+        flvls[[k]] <- levels(xvars[[k]])
+        xvars[[k]] <- matrix(as.integer(xvars[[k]]))
+        xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
+        xdim[k] <- 1L
       } else if (type[[k]]=="nom"){
         xvars[[k]] <- as.factor(xvars[[k]])
         flvls[[k]] <- levels(xvars[[k]])
@@ -176,6 +182,9 @@ makessp <-
       kconst <- 1
       for(k in 1:nxvar){
         if(type[[k]]=="nom"){
+          gvec <- gvec + kconst*(xvars[[k]]-1L)
+          kconst <- kconst*xrng[[k]][2]
+        } else if(type[[k]]=="ord"){
           gvec <- gvec + kconst*(xvars[[k]]-1L)
           kconst <- kconst*xrng[[k]][2]
         } else if(type[[k]]=="prm"){
