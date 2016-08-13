@@ -9,34 +9,18 @@
       subroutine ordkersym(x, n, g, y)
 
       integer n, i, j, x(n), g
-      double precision y(n,n), ID(g,g), D(n,g), rj
+      double precision y(n,n), a, b, c
 
-      ID = 0
-      do j = 1, (g-1)
-        rj = real(j)
-        do i = 1, j
-          ID(i,j) = (g-rj)/g
-        end do
-        do i = (j+1), g
-          ID(i,j) = -rj/g
-        end do
-      end do
-      do i = 1, g
-        ID(i,g) = 1./g
-      end do
-
-      D = 0
-      do j = 1, g
-        do i = 1, n
-          if (x(i).EQ.j) then
-            D(i,j) = 1 - 1./g
-          else
-            D(i,j) = - 1./g
-          end if
+      c = (g-1.0)*(2.0*g-1.0)/(6.0*g)
+      y(1,1) = 1.0 - x(1) + c + x(1)*(x(1)-1.0)/g
+      do i = 2, n
+        a = x(i)*(x(i)-1.0)
+        y(i,i) =  1.0 - x(i) + c + a/g
+        do j = 1, (i-1)
+          b = x(j)*(x(j)-1.0)
+          y(i,j) =  1.0 - MAX(x(i),x(j)) + c + (a+b)/(2.0*g)
+          y(j,i) = y(i,j)
         end do
       end do
-
-      D = MATMUL(D,ID)
-      y = MATMUL(D, TRANSPOSE(D))
 
       end

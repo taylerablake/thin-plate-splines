@@ -1,10 +1,10 @@
 predict.bigssa <-
   function(object,newdata=NULL,se.fit=FALSE,include=object$tnames,
            effect=c("all","0","lin","non"),includeint=FALSE,
-           design=FALSE,smoothMatrix=FALSE,...) {
+           design=FALSE,smoothMatrix=FALSE,intercept=NULL,...) {
     ###### Predicts for class "bigssa" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: March 6, 2016
+    ###### Last modified: May 2, 2016
     
     ### check newdata
     effect <- effect[1]
@@ -94,6 +94,11 @@ predict.bigssa <-
     
     ### make design and penalty matrices
     if(lnt==length(oldnames) && effect=="all"){intid <- TRUE} else {intid <- includeint}
+    intercept <- intercept[1]
+    if(!is.null(intercept)){
+      if(!is.logical(intercept)) stop("Input 'intercept' must be logical")
+      intid <- intercept
+    }
     dps <- ssadpm(newdata,object$type,rks[1:3],object$modelspec$myknots,
                   Etab,pred=TRUE,effect,intid)
     Knames <- colnames(dps$Kmat)

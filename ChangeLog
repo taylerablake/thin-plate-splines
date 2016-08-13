@@ -1,3 +1,28 @@
+Changes from ver 1.0-8 to ver 1.0-9     [Aug-11-2016]
+   1) bigsplines-package
+	*   Added plotbar function for generic X-Y plotting with colorbars 
+	*   Added plotci function for generic X-Y plotting with confidence intervals
+	*   Improvements to imagebar function (added zaxis.at and zaxis.labels inputs) 
+	*   Improvements to prediction function for bigssa, bigssg, and bigssp
+	*   Improvements to ordinal smoothing spline computation
+   2) bigssa and makessa
+	*   Computational improvements for ordinal smoothing splines
+	*   Improvements to prediction functions
+   3) bigssp and makessp
+	*   Computational improvements for ordinal smoothing splines
+	*   Improvements to prediction functions
+   4) imagebar
+	*   New input zaxis.at to controls tick locations for colorbar
+	*   New input zaxis.labels to control tick labels for colorbar
+   5) plotbar
+	*   New function for generic X-Y plotting with colorbars
+	*   Plots X vs Y with points color-coded according to Z
+   6) plotci
+	*   New function for generic X-Y plotting with confidence intervals
+	*   Plots X vs Y with confidence bands or bars
+	*   Allows for a user-defined link function
+
+
 Changes from ver 1.0-7 to ver 1.0-8     [Mar-17-2016]
    1) bigsplines-package
 	*   Added functionality for ordinal predictors (type="ord")

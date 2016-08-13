@@ -1,6 +1,7 @@
 imagebar <-
   function(x,y,z,xlim=NULL,ylim=NULL,zlim=NULL,
            zlab=NULL,zcex.axis=NULL,zcex.lab=NULL,
+           zaxis.at=NULL,zaxis.labels=TRUE,
            col=NULL,ncolor=21,drawbar=TRUE,zline=2,
            pltimage=c(.2,.8,.2,.8),pltbar=c(.82,.85,.2,.8),...){
     
@@ -24,7 +25,7 @@ imagebar <-
       # plot color bar
       par(plt=pltbar)
       plot(1,1,t="n",ylim=zlim,xlim=c(0,1),xaxt="n",yaxt="n",xaxs="i",yaxs="i",xlab="",ylab="")
-      axis(4,cex.axis=zcex.axis)
+      axis(4,at=zaxis.at,labels=zaxis.labels,cex.axis=zcex.axis)
       mtext(zlab,side=4,line=zline,cex=zcex.lab*par()$cex)
       for (ii in 1:ncolor) {
         idx <- zlim[1] + (ii-1)/scales

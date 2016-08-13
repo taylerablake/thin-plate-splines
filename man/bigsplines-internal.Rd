@@ -19,6 +19,7 @@
 \alias{makeZtX}
 \alias{makeZtZ}
 \alias{nbmle}
+\alias{num2col}
 \alias{pdsXty}
 \alias{pinvsm}
 \alias{postvar}

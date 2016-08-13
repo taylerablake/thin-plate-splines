@@ -9,7 +9,7 @@ Get fitted values and standard error estimates for generalized smoothing spline 
 \usage{
 \method{predict}{bigssg}(object,newdata=NULL,se.lp=FALSE,include=object$tnames,
         effect=c("all","0","lin","non"),includeint=FALSE,
-        design=FALSE,smoothMatrix=FALSE,...)
+        design=FALSE,smoothMatrix=FALSE,intercept=NULL,...)
 }
 \arguments{
   \item{object}{
@@ -35,6 +35,9 @@ Get fitted values and standard error estimates for generalized smoothing spline 
 }
   \item{smoothMatrix}{
   Logical indicating whether the smoothing matrix should be returned.
+}
+  \item{intercept}{
+  Logical indicating whether the intercept should be included in the prediction. When used, this input overrides the \code{includeint} input.
 }
   \item{\dots}{
 	Ignored.
