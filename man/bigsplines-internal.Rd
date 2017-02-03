@@ -7,6 +7,7 @@
 %% List of Internal Functions Called
 \alias{gcvcss}
 \alias{gcvgss}
+\alias{gcvoss}
 \alias{gcvssa}
 \alias{gcvssg}
 \alias{gcvssp}
@@ -18,6 +19,7 @@
 \alias{makerkm}
 \alias{makeZtX}
 \alias{makeZtZ}
+\alias{MPinv}
 \alias{nbmle}
 \alias{num2col}
 \alias{pdsXty}

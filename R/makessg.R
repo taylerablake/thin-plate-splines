@@ -5,7 +5,7 @@ makessg <-
            gcvtype=c("acv","gacv","gacv.old")){
     ###### Makes Generalized Smoothing Spline Anova models
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: March 10, 2015
+    ###### Last modified: January 30, 2017
     
     ### get initial info 
     mf <- match.call()
@@ -159,7 +159,7 @@ makessg <-
     flvls <- xrng <- vector("list",nxvar)
     xdim <- vector("integer",nxvar)
     for(k in 1:nxvar){
-      if(any(type[[k]]==c("cub","cub0","per","tps"))){
+      if(any(type[[k]]==c("lin","cub","cub0","per","tps"))){
         xvars[[k]] <- as.matrix(xvars[[k]]+0.0)
         xdim[k] <- ncol(xvars[[k]])
         if(type[[k]]=="tps"){
@@ -170,7 +170,7 @@ makessg <-
         if(!is.na(rparm[1])){xrng[[k]] <- apply(xvars[[k]],2,range)}
         flvls[[k]] <- NA
       } else if (type[[k]]=="ord"){
-        xvars[[k]] <- factor(xvars[[k]],ordered=TRUE)
+        xvars[[k]] <- as.ordered(xvars[[k]])
         flvls[[k]] <- levels(xvars[[k]])
         xvars[[k]] <- matrix(as.integer(xvars[[k]]))
         xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
@@ -182,7 +182,7 @@ makessg <-
         xrng[[k]] <- matrix(c(1,length(flvls[[k]])),2,1)
         xdim[k] <- 1L
       } else{
-        stop('You must set type to either "cub", "cub0", "nom", "per", or "tps" for each effect in formula.')
+        stop('You must set type to either "nom", "ord", "lin", "cub", "cub0", "per", or "tps" for each effect in formula.')
       }
     } # end for(k in 1:nxvar)
     
@@ -205,7 +205,7 @@ makessg <-
     ### check for rounding
     if(is.na(rparm[1])){
       for(k in 1:nxvar){
-        if(any(type[[k]]==c("cub","cub0","per"))){
+        if(any(type[[k]]==c("lin","cub","cub0","per"))){
           xrng[[k]] <- range(xvars[[k]])
           xvars[[k]] <- (xvars[[k]]-xrng[[k]][1])/(xrng[[k]][2]-xrng[[k]][1])
         }

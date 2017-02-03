@@ -4,6 +4,7 @@
 \alias{print.bigssg}
 \alias{print.bigssp}
 \alias{print.bigtps}
+\alias{print.ordspline}
 \alias{print.summary.bigspline}
 \alias{print.summary.bigssa}
 \alias{print.summary.bigssg}
@@ -22,6 +23,7 @@ This function prints basic model fit information for a fit \code{bigsplines} mod
 \method{print}{bigssg}(x,...)
 \method{print}{bigssp}(x,...)
 \method{print}{bigtps}(x,...)
+\method{print}{ordspline}(x,...)
 \method{print}{summary.bigspline}(x,digits=4,...)
 \method{print}{summary.bigssa}(x,digits=4,...)
 \method{print}{summary.bigssg}(x,digits=4,...)
@@ -30,7 +32,7 @@ This function prints basic model fit information for a fit \code{bigsplines} mod
 }
 \arguments{
   \item{x}{
-  	Object of class "bigspline" (output from \code{\link{bigspline}}), class "summary.bigspline" (output from \code{\link{summary.bigspline}}), class "bigssa" (output from \code{\link{bigssa}}), class "summary.bigssa" (output from \code{\link{summary.bigssa}}), class "bigssg" (output from \code{\link{bigssg}}), class "summary.bigssg" (output from \code{\link{summary.bigssg}}), class "bigssp" (output from \code{\link{bigssp}}), class "summary.bigssp" (output from \code{\link{summary.bigssp}}), class "bigtps" (output from \code{\link{bigtps}}), class "summary.bigtps" (output from \code{\link{summary.bigtps}}).
+  	Object of class "bigspline" (output from \code{\link{bigspline}}), class "summary.bigspline" (output from \code{\link{summary.bigspline}}), class "bigssa" (output from \code{\link{bigssa}}), class "summary.bigssa" (output from \code{\link{summary.bigssa}}), class "bigssg" (output from \code{\link{bigssg}}), class "summary.bigssg" (output from \code{\link{summary.bigssg}}), class "bigssp" (output from \code{\link{bigssp}}), class "summary.bigssp" (output from \code{\link{summary.bigssp}}), class "bigtps" (output from \code{\link{bigtps}}), class "summary.bigtps" (output from \code{\link{summary.bigtps}}), or class "ordspline" (output from \code{\link{ordspline}}).
 }
   \item{digits}{
   Number of decimal places to print.
@@ -59,16 +61,18 @@ This function prints basic model fit information for a fit \code{bigsplines} mod
   "bigtps" objects: prints Spline Type, Fit Statistic information, and Smoothing Parameter.
   
   "summary.bigtps" objects: prints Spline Type, five number summary of Residuals, Error Standard Deviation Estimate, Fit Statistics, and Smoothing Parameter.
+  
+  "ordspline" objects: prints Monotonic, Fit Statistic information, and Smoothing Parameter.
 }
 \details{
-	See \code{\link{bigspline}}, \code{\link{bigssa}}, \code{\link{bigssg}}, \code{\link{bigssp}}, and \code{\link{bigtps}} for more details.
+	See \code{\link{bigspline}}, \code{\link{bigssa}}, \code{\link{bigssg}}, \code{\link{bigssp}}, \code{\link{bigtps}}, and \code{\link{ordspline}} for more details.
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
 }
 \examples{
 
-### see examples for bigspline, bigssa, bigssg, bigssp, and bigtps
+### see examples for bigspline, bigssa, bigssg, bigssp, bigtps, and ordspline
 
 }
 

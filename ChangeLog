@@ -1,3 +1,31 @@
+Changes from ver 1.0-9 to ver 1.1-0     [Feb-01-2017]
+   1) bigsplines-package
+	*   Added linear smoothing spline (type="lin") to bigssa, bigssg, and bigssp
+	*   Added ordspline function for fitting ordinal smoothing spline
+	*   Added ssBasis function for generating polynomial smoothing spline basis matrices
+	*   Added more options to plotci function with bars=TRUE option
+	*   Update references throughout
+   2) bigssa and makessa
+	*   Added new reproducing kernel: linear smoothing spline.
+	*   Use type="lin" for linear smoothing spline.
+   3) bigssg and makessg
+	*   Added new reproducing kernel: linear smoothing spline.
+	*   Use type="lin" for linear smoothing spline.
+   4) bigssp and makessp
+	*   Added new reproducing kernel: linear smoothing spline.
+	*   Use type="lin" for linear smoothing spline.
+   5) ordspline
+	*   New function for fitting ordinal smoothing spline.
+	*   Use monotone=TRUE to fit monotonic ordinal smoothing spline.
+   6) plotci
+	*   When bars=TRUE, now possible to add a unique barlty, barlwd, 
+            and col.ci for each of the input values of x
+   7) ssBasis
+	*   New function for generating polynomial smoothing spline basis matrices.
+	*   Use m=1 for linear, m=2 for cubic, and m=3 for quintic.
+	*   First and second derivative of basis matrices also available.
+
+
 Changes from ver 1.0-8 to ver 1.0-9     [Aug-11-2016]
    1) bigsplines-package
 	*   Added plotbar function for generic X-Y plotting with colorbars 

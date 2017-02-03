@@ -21,10 +21,13 @@ plotci <-
   }
   
   if(bars){
+    if(length(barlty)!=length(x)) barlty <- rep(barlty[1],length(x))
+    if(length(barlwd)!=length(x)) barlwd <- rep(barlwd[1],length(x))
+    if(length(col.ci)!=length(x)) col.ci <- rep(col.ci[1],length(x))
     for(k in 1:length(x)){
-      lines(rep(x[k],2), link(c(y[k]-cval*se[k], y[k]+cval*se[k])), lty=barlty, lwd=barlwd, col=col.ci)
-      lines(c(x[k]-bw, x[k]+bw), rep(link(y[k]-cval*se[k]),2), lty=barlty, lwd=barlwd, col=col.ci)
-      lines(c(x[k]-bw, x[k]+bw), rep(link(y[k]+cval*se[k]),2), lty=barlty, lwd=barlwd, col=col.ci)
+      lines(rep(x[k],2), link(c(y[k]-cval*se[k], y[k]+cval*se[k])), lty=barlty[k], lwd=barlwd[k], col=col.ci[k])
+      lines(c(x[k]-bw, x[k]+bw), rep(link(y[k]-cval*se[k]),2), lty=barlty[k], lwd=barlwd[k], col=col.ci[k])
+      lines(c(x[k]-bw, x[k]+bw), rep(link(y[k]+cval*se[k]),2), lty=barlty[k], lwd=barlwd[k], col=col.ci[k])
     }
   } else {
     myrgb <- col2rgb(col.ci)/255

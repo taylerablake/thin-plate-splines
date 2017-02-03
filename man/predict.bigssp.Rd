@@ -61,11 +61,11 @@ Get fitted values and standard error estimates for smoothing splines with parame
 
   Helwig, N. E. (2013). \emph{Fast and stable smoothing spline analysis of variance models for large samples with applications to electroencephalography data analysis}. Unpublished doctoral dissertation. University of Illinois at Urbana-Champaign.
 
-  Helwig, N. E. (in press). Efficient estimation of variance components in nonparametric mixed-effects models with large samples. \emph{Statistics and Computing}.
+  Helwig, N. E. (2016). Efficient estimation of variance components in nonparametric mixed-effects models with large samples. \emph{Statistics and Computing, 26}, 1319-1336.
 
 	Helwig, N. E. and Ma, P. (2015). Fast and stable multiple smoothing parameter selection in smoothing spline analysis of variance models with large samples. \emph{Journal of Computational and Graphical Statistics, 24}, 715-732.
   
-  Helwig, N. E. and Ma, P. (in press). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface}.
+  Helwig, N. E. and Ma, P. (2016). Smoothing spline ANOVA for super-large samples: Scalable computation via rounding parameters. \emph{Statistics and Its Interface, 9}, 433-444.
 }
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>

@@ -302,7 +302,7 @@ sspwork <-
     
     ### retransform predictors
     for(k in 1:sspmk$nxvar){
-      if(any(sspmk$type[[k]]==c("cub","cub0","per"))){
+      if(any(sspmk$type[[k]]==c("lin","cub","cub0","per"))){
         sspmk$xvars[[k]] <- as.matrix(sspmk$xvars[[k]]*(sspmk$xrng[[k]][2]-sspmk$xrng[[k]][1])+sspmk$xrng[[k]][1])
       } else if(sspmk$type[[k]]=="ord"){
         sspmk$xvars[[k]] <- as.matrix(sspmk$flvls[[k]][sspmk$xvars[[k]]])

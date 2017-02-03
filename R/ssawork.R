@@ -327,7 +327,7 @@ ssawork <-
     
     ### retransform predictors
     for(k in 1:ssamk$nxvar){
-      if(any(ssamk$type[[k]]==c("cub","cub0","per"))){
+      if(any(ssamk$type[[k]]==c("lin","cub","cub0","per"))){
         ssamk$xvars[[k]] <- as.matrix(ssamk$xvars[[k]]*(ssamk$xrng[[k]][2]-ssamk$xrng[[k]][1])+ssamk$xrng[[k]][1])
       } else if(ssamk$type[[k]]=="ord"){
         ssamk$xvars[[k]] <- as.matrix(ssamk$flvls[[k]][ssamk$xvars[[k]]])

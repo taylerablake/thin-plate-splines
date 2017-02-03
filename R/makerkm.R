@@ -94,6 +94,13 @@ makerkm <-
             qm[[k]] <- (.Fortran("cubkerzsym",theknots[[k]],nknots,
                                  matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[3]]
           }
+        } else if(type[[k]]=="lin"){
+          jm[[k]] <- (.Fortran("linker",xvars[[k]],theknots[[k]],nunewr,nknots,
+                               matrix(0,nunewr,nknots),PACKAGE="bigsplines"))[[5]]
+          if(pred==FALSE){
+            qm[[k]] <- (.Fortran("linkersym",theknots[[k]],nknots,
+                                 matrix(0,nknots,nknots),PACKAGE="bigsplines"))[[3]]
+          }
         } # end if(type[[k]]=="cub")
       } # end if(is.na(xvars[[k]][[1]])==FALSE)
     } # end for(k in 1:nxvar)

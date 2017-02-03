@@ -29,9 +29,6 @@ Bin-sampling algorithm. New algorithm forms equidistant grid, whereas old algori
 \value{
 Returns an index vector indicating the rows of \code{x} that were bin-sampled. 
 }
-\references{
-Helwig, N. E. and Ma, P. (in preparation). Stable smoothing spline approximation via bin-sampled knots.
-}
 \author{
 Nathaniel E. Helwig <helwig@umn.edu>
 }

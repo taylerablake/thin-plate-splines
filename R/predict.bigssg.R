@@ -4,7 +4,7 @@ predict.bigssg <-
            design=FALSE,smoothMatrix=FALSE,intercept=NULL,...) {
     ###### Predicts for class "bigssg" objects
     ###### Nathaniel E. Helwig (helwig@umn.edu)
-    ###### Last modified: May 2, 2016
+    ###### Last modified: January 22, 2017
     
     ### check newdata
     effect <- effect[1]
@@ -82,14 +82,14 @@ predict.bigssg <-
         if(any(is.na(newdata[[k]]))){
           stop(paste("Missing data in 'newdata' for",xnames[k],"term in 'include' input."))
         }
-        if(any(object$type[[k]]==c("cub","cub0","per","tps"))){
+        if(any(object$type[[k]]==c("lin","cub","cub0","per","tps"))){
           newdata[[k]] <- as.matrix(newdata[[k]]+0.0)
         } else {
           fidx <- match(newdata[[k]],object$modelspec$flvls[[k]])
           if(any(is.na(fidx))){stop(paste("Inappropriate 'newdata' for",xnames[k],"(factor levels don't match)."))}
           newdata[[k]] <- as.matrix(as.integer(fidx))
         }
-        if(any(object$type[[k]]==c("cub","cub0","per"))){
+        if(any(object$type[[k]]==c("lin","cub","cub0","per"))){
           newdata[[k]] <- (newdata[[k]]-object$modelspec$xrng[[k]][1])/(object$modelspec$xrng[[k]][2]-object$modelspec$xrng[[k]][1])
         } 
         newdim[k] <- nrow(newdata[[k]])
