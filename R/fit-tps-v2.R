@@ -52,13 +52,13 @@ fittps <-  function(xgrid,y,D2,nknots=NULL,nvec=NULL,rparm=NA,
       Cqrd <- qr(cbind(1,theknots),LAPACK=TRUE)
       CqrQ <- qr.Q(Cqrd,complete=TRUE)
       CZ <- CqrQ[,(nx+2):nknots]
-      rm(Cqrd,CqrQ)
+      #rm(Cqrd,CqrQ)
       Qmat <- crossprod(CZ,mqed%*%CZ)
       # make design matrix and crossproduct matrix
       wsqrt <- sqrt(w)
       Kmat <- cbind(1,x)
       Jmat <- sqed%*%CZ
-      rm(sqed)
+      #rm(sqed)
       KtK <- crossprod(wsqrt %*% regressors %*% Kmat)
       KtJ <- crossprod(wsqrt %*% regressors %*% Kmat,
                        wsqrt %*% regressors %*% Jmat)
@@ -113,17 +113,27 @@ fittps <-  function(xgrid,y,D2,nknots=NULL,nvec=NULL,rparm=NA,
 
     ndf <- data.frame(n=n,df=effdf,row.names="")
     tpsfit <- list(fitted.values=yhat,
-                   se.fit=pse,x=x,y=y,
+                   se.fit=pse,
+                   x=x,
+                   y=y,
+                   regressor_mat= regressors,
                    funique=w,sigma=sqrt(mevar),
                    ndf=ndf,
                    info=c(gcv=gcv,rsq=vaf,aic=aic,bic=bic),
                    myknots=theknots,
-                   nvec=nvec,rparm=rparm,
+                   nvec=nvec,
+                   rparm=rparm,
                    lambda=lambda,
                    coef=dchat,
                    Kmat=Kmat,
                    Jmat=Jmat,
-                   fxhat=fxhat)
+                   Cqrd=Cqrd,
+                   Qmat=Qmat,
+                   fxhat=fxhat,
+                   sqed=sqed,
+                   mqed=mqed,
+                   CZ=CZ,
+                   CqrQ=CqrQ)
     tpsfit
 
 }

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 fittps <-
+=======
+fit_tps <-
+>>>>>>> 6605ae7768c013f19f3df91dbf9bfa0578897f8b
   function(xgrid,y,D2,nknots=NULL,nvec=NULL,rparm=NA,
            alpha=1,lambdas=NULL,se.fit=FALSE,
            rseed=1234,knotcheck=TRUE){
@@ -21,9 +25,8 @@ fittps <-
     }
     y <- matrix(as.vector(t(y[,-1])),ncol=1,nrow=N*(M-1))
     
-    
-    
-    #yty <- sum(y^2)
+    y <- as.vector(t(y[,-1]))
+
     yty <- sum((y*rep(diag(D2)[-1],N))^2)
     ysm <- sum(y)
     if(nrow(y)!=n){stop("Lengths of 'x' and 'y' must match.")}
@@ -103,14 +106,16 @@ fittps <-
     w <- diag(rep(diag(D2)[-1],N))  
     #   if(length(kidx)>1){theknots <- as.matrix(x[kidx,])}
     }
+   
+    knots <- x 
+    nvec <- length(knots)
     
-    ### get knot indices
-    # if(length(kidx)==1L){
+    nunewr <- n
+    w <- diag(rep(diag(D2)[-1],N))  
+
        nknots <- as.integer(min(c(nunewr,nknots)))
        if(nknots<1){stop("Input 'nknots' must be positive integer.")}
-    #   kidx <- sample(nunewr,nknots,prob=(w/n))
-    #   theknots <- as.matrix(x[kidx,])
-    # }
+    
     if(knotcheck){
       theknots <- unique(theknots)
       nknots <- nrow(theknots)
@@ -142,7 +147,6 @@ fittps <-
       JtJ <- crossprod(wsqrt %*% regressors %*% Jmat)
       Kty <- crossprod(wsqrt %*% regressors %*% Kmat,wsqrt %*% y)
       Jty <- crossprod(wsqrt %*% regressors %*% Jmat,wsqrt %*% y)
-
     } #else {
     #   # EVD of penalty matrix
     #   if(nvec<1L){
@@ -251,7 +255,6 @@ fittps <-
                    lambda=lambda,
                    coef=dchat,
                    coef.csqrt=csqrt)
-    # class(tpsfit) <- "bigtps"
     return(tpsfit)
     
   }
