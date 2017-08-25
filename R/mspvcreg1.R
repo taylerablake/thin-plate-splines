@@ -1,13 +1,18 @@
 ## Fit Multiple Smoothing Parameter Varying Coefficient (Gaussian) REGression
 
-
-mspvcreg1 <- function(s,r,id.basis,y,wt,method,alpha,varht,random,skip.iter,w,d2)
+mspvcreg1 <- function(s,r,W,id.basis,
+                      y,wt,method,alpha,
+                      varht,random=NULL,
+                      skip.iter)
 {
   qr.trace <- FALSE
+
+  ## premultiply Y, S, R by D^(-1/2) - the wt argument to 
+  ## accomodate heterogeneous prediciton errors 
   
-  random <- NULL
   if ((alpha<0)&(method%in%c("u","v"))) qr.trace <- TRUE
   alpha <- abs(alpha)
+  
   ## get dimensions
   nobs <- nrow(r)
   nxi <- ncol(r)
@@ -16,11 +21,15 @@ mspvcreg1 <- function(s,r,id.basis,y,wt,method,alpha,varht,random,skip.iter,w,d2
     else nnull <- ncol(s)
   }
   else nnull <- 0
+  
   if (!is.null(random)) nz <-ncol(as.matrix(random$z))
   else nz <- 0
+  
   nxiz <- nxi + nz
   nn <- nxiz + nnull
-  nq <- dim(r)[3]
+  nq <- dim(r)[3] ## this will be 2, one dimension each for l and m
+  
+  
   ## cv function
   cv <- function(theta) {
     ind.wk <- theta[1:nq]!=theta.old
@@ -50,7 +59,8 @@ mspvcreg1 <- function(s,r,id.basis,y,wt,method,alpha,varht,random,skip.iter,w,d2
     if (qr.trace) {
       qq.wk <- chol(q.wk,pivot=TRUE)
       sr <- cbind(s.wk,r.wk0[,attr(qq.wk,"pivot")])
-      sr <- rbind(sr,cbind(matrix(0,nxiz,nnull),qq.wk))
+      sr <- rbind(W %*% sr,
+                  cbind(matrix(0,nxiz,nnull),qq.wk))
       sr <- qr(sr,tol=0)
       rss <- mean(qr.resid(sr,c(y.wk,rep(0,nxiz)))[1:nobs]^2)
       trc <- sum(qr.Q(sr)[1:nobs,]^2)/nobs
@@ -63,8 +73,10 @@ mspvcreg1 <- function(s,r,id.basis,y,wt,method,alpha,varht,random,skip.iter,w,d2
         if (method=="v") score <- rss/(1-alpha.wk*trc)^2
       }
       if (return.fit) {
+        ## NEED TO VALIDATE THAT PREMULTIPLYING W %*% cbind(s.wk,r.wk0)
+        ## IS THE CORRECT SPECIFICATION OF THE OBJECTIVE FUNCTION
         z <- .Fortran("reg",
-                      as.double(cbind(s.wk,r.wk0)), as.integer(nobs), as.integer(nnull),
+                      as.double(W %*% cbind(s.wk,r.wk0)), as.integer(nobs), as.integer(nnull),
                       as.double(q.wk), as.integer(nxiz), as.double(y.wk),
                       as.integer(switch(method,"u"=1,"v"=2,"m"=3)),
                       as.double(alpha), varht=as.double(varht),
@@ -79,8 +91,11 @@ mspvcreg1 <- function(s,r,id.basis,y,wt,method,alpha,varht,random,skip.iter,w,d2
       }
     }
     else {
+      ## NEED TO VALIDATE THAT PREMULTIPLYING W %*% cbind(s.wk,r.wk0)
+      ## IS THE CORRECT SPECIFICATION OF THE OBJECTIVE FUNCTION
+      ## NEED TO COMPILE 
       z <- .Fortran("reg",
-                    as.double(cbind(s.wk,r.wk0)), as.integer(nobs), as.integer(nnull),
+                    as.double(W %*% cbind(s.wk,r.wk0)), as.integer(nobs), as.integer(nnull),
                     as.double(q.wk), as.integer(nxiz), as.double(y.wk),
                     as.integer(switch(method,"u"=1,"v"=2,"m"=3)),
                     as.double(alpha), varht=as.double(varht),
